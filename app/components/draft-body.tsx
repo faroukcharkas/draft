@@ -7,7 +7,6 @@ import { Slate, Editable, withReact } from 'slate-react'
 import { withHistory } from 'slate-history'
 import Tip from "./tip";
 import { motion, AnimatePresence } from "framer-motion";
-import escapeHtml from 'escape-html'
 import { Text } from 'slate'
 
 function Element({ attributes, children, element }: { attributes: any, children: any, element: any }) {
@@ -68,7 +67,7 @@ async function getTip({ currentText }: { currentText: string }) {
 
 const serialize = (node: any) => {
   if (Text.isText(node)) {
-    let string = escapeHtml(node.text)
+    let string = node.text
     if (node.bold) {
       string = `<strong>${string}</strong>`
     }
@@ -83,7 +82,7 @@ const serialize = (node: any) => {
     case 'paragraph':
       return `<p>${children}</p>`
     case 'link':
-      return `<a href="${escapeHtml(node.url)}">${children}</a>`
+      return `<a href="${node.url}">${children}</a>`
     case 'tip':
       return ``
     default:
