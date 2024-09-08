@@ -1,13 +1,15 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useDebounce } from "@uidotdev/usehooks";
-import { createEditor, Descendant, Transforms } from 'slate'
-import { Slate, Editable, withReact } from 'slate-react'
+import { createEditor, Descendant, Node, Transforms } from 'slate'
+import { Slate, Editable, withReact, ReactEditor } from 'slate-react'
 import { withHistory } from 'slate-history'
 import Tip from "./tip";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Text } from 'slate'
+import escapeHtml from 'escape-html'
+
 
 function Element({ attributes, children, element }: { attributes: any, children: any, element: any }) {
   switch (element.type) {
@@ -65,9 +67,9 @@ async function getTip({ currentText }: { currentText: string }) {
   return data.tip;
 }
 
-const serialize = (node: any) => {
+const serialize = (node: Node): string => {
   if (Text.isText(node)) {
-    let string = node.text
+    let string = escapeHtml(node.text)
     if (node.bold) {
       string = `<strong>${string}</strong>`
     }
@@ -82,7 +84,7 @@ const serialize = (node: any) => {
     case 'paragraph':
       return `<p>${children}</p>`
     case 'link':
-      return `<a href="${node.url}">${children}</a>`
+      return `<a href="${escapeHtml(node.url)}">${children}</a>`
     case 'tip':
       return ``
     default:
@@ -93,7 +95,7 @@ const serialize = (node: any) => {
 export function DraftBody() {
   // Editor
   const renderElement = useCallback((props: any) => <Element {...props} />, [])
-  const editor = useMemo(() => withTips(withReact(withHistory(createEditor()))), [])
+  const editor: ReactEditor = useMemo(() => withTips(withReact(withHistory(createEditor()))), [])
 
   // Value
   const [value, setValue] = useState<string>('');
@@ -135,7 +137,7 @@ export function DraftBody() {
     setValue(serializedValue);
   }, []);
 
-  const onKeyDown = useCallback((event: any) => {
+  const onKeyDown = useCallback((event: React.KeyboardEvent<HTMLDivElement>) => {
     console.log("onKeyDown", event);
     clearTip();
     if (event.key === 'Tab' && tip) {
