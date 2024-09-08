@@ -1,5 +1,5 @@
 {
-  "name": "draft",
+  "name": "@pentip/draft",
   "private": true,
   "version": "1.0.0",
   "main": "src/index.ts",
@@ -8,5 +8,8 @@
   },
   "author": "Farouk Charkas",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "slate": "^0.103.0"
+  }
 }

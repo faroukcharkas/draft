@@ -14,6 +14,7 @@ export async function POST(req: NextRequest) {
         - Do not return anything else but the continuation of the text.
         - Do not return any other text like "The next words are..." or "The user will write..."
         - Write in the same style as the user's text.
+        - Leave out any formatting or HTML tags
         
         The user's text: ${currentText}
         `,

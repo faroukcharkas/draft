@@ -1,4 +1,4 @@
-import DocumentDraft from "./components/document-draft";
+import DocumentDraft from "./components/draft/draft";
 
 export default function Home() {
   return (
