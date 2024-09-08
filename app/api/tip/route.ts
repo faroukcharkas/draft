@@ -8,13 +8,18 @@ export async function POST(req: NextRequest) {
     const tip = await generateText({
         model: openai("gpt-4o-mini"),
         prompt: `
-        You are a writing assistant that helps with writing. Given the text below, either fix any errors or suggest a continution of the text.
+        You are a writing assistant that helps the user with ideating. Given the text below, try and guess the next twenty or so words the user will write.
 
-        Text: ${currentText}
+        Guidelines:
+        - Do not return anything else but the continuation of the text.
+        - Do not return any other text like "The next words are..." or "The user will write..."
+        - Write in the same style as the user's text.
         
-        Do not return anything else but either the revised text or the continuation:
+        The user's text: ${currentText}
         `,
     });
+
+    console.log(tip.text);
 
     return NextResponse.json({ tip: tip.text });
 }
