@@ -104,6 +104,15 @@ export function DraftBody() {
   const [tip, setTip] = useState<string | null>(null);
   const [isTipVisible, setIsTipVisible] = useState(false);
 
+  const clearTip = useCallback(() => {
+    setTip(null);
+    Transforms.removeNodes(editor, { 
+      match: (n: any) => n.type === 'tip',
+      mode: 'highest'
+    });
+    setIsTipVisible(false);
+  }, [editor]);
+
   useEffect(() => {
     if (isTipVisible) return;
 
@@ -116,7 +125,7 @@ export function DraftBody() {
         setTip(generatedTip);
       }
     });
-  }, [debouncedValue]);
+  }, [debouncedValue, editor]);
 
   const onChange = useCallback((newValue: Descendant[]) => {
     let serializedValue = "";
@@ -128,19 +137,15 @@ export function DraftBody() {
   }, []);
 
   const onKeyDown = useCallback((event: any) => {
-    if (event.key === 'Tab') {
+    console.log("onKeyDown", event);
+    clearTip();
+    if (event.key === 'Tab' && tip) {
+      // Accept tip
       event.preventDefault();
-      // Remove the tip node
-      Transforms.removeNodes(editor, { 
-        match: (n: any) => n.type === 'tip',
-        mode: 'highest'
-      });
-      // Insert the tip text at the current selection
+      clearTip();
       editor.insertText(tip);
-      setIsTipVisible(false);
-      setTip(null);
     }
-  }, [editor, tip]);
+  }, [editor, tip, clearTip]);
 
   return (
     <div className="flex flex-1 flex-col h-full">
