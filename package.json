@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^0.0.58",
+    "@types/escape-html": "^1.0.4",
     "@uidotdev/usehooks": "^2.4.1",
     "ai": "^3.3.28",
     "escape-html": "^1.0.3",
