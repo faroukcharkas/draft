@@ -7,19 +7,14 @@ import { Slate, Editable, withReact, ReactEditor } from 'slate-react'
 import { withHistory } from 'slate-history'
 import Tip from "./tip";
 import { motion } from "framer-motion";
-import { DraftSerialization } from "@pentip/draft";
-import { DraftElement, DraftNode, TipElement } from "@pentip/draft/src/types";
-
+import { DraftSerialization } from "@/packages/document";
+import { DocumentElement, TipElement } from "@/packages/document/src/types";
 import { RenderElementProps } from 'slate-react';
 
-interface RenderDraftElementProps extends RenderElementProps {
-  element: DraftElement;
-}
-
-function RenderDraftElement({ attributes, children, element }: RenderDraftElementProps) {
+function RenderDraftElement({ attributes, children, element }: RenderElementProps) {
   switch (element.type) {
     case 'tip':
-      return <Tip attributes={attributes}>{children}</Tip>
+      return <Tip element={element} attributes={attributes}>{children}</Tip>
     case 'paragraph':
       return (
         <motion.p
@@ -32,33 +27,29 @@ function RenderDraftElement({ attributes, children, element }: RenderDraftElemen
         </motion.p>
       )
     default:
-      console.log("Unknown element type", element.type);
-      return <span {...attributes}>{children}</span>
+      return <p {...attributes}>{children}</p>
   }
 }
 
 function insertTip(editor: ReactEditor, text: string) {
-  console.log("Inserting tip", text);
   const tip: TipElement = {
     type: 'tip',
     children: [
       { text: text }
     ],
   }
-  
   Transforms.insertNodes(editor, tip)
-  console.log("Tip inserted (from insertTip)");
 }
 
 function withTips(editor: ReactEditor) {
   const { isInline, isVoid } = editor
 
   editor.isInline = (element: Element) => {
-    return (element as DraftElement).type === 'tip' ? true : isInline(element)
+    return (element as DocumentElement).type === 'tip' ? true : isInline(element)
   }
 
   editor.isVoid = (element: Element) => {
-    return (element as DraftElement).type === 'tip' ? true : isVoid(element)
+    return (element as DocumentElement).type === 'tip' ? true : isVoid(element)
   }
 
   return editor
@@ -76,11 +67,11 @@ async function getTip({ currentText }: { currentText: string }) {
 
 export function DraftBody() {
   // Editor
-  const renderElement = useCallback((props: any) => <RenderDraftElement {...props} />, [])
+  const renderElement = useCallback((props: RenderElementProps) => <RenderDraftElement {...props} />, [])
   const editor = useMemo(() => withTips(withReact(withHistory(createEditor()))), [])
 
   // Value
-  const [value, setValue] = useState<DraftNode[]>([{ type: 'paragraph', children: [{ text: '' }] }]);
+  const [value, setValue] = useState<Descendant[]>([{ type: 'paragraph', children: [{ text: '' }] }]);
   const debouncedValue = useDebounce(value, 1000);
 
   // Tip
@@ -91,12 +82,12 @@ export function DraftBody() {
     if (tip) {
       setTip(null);
       Transforms.removeNodes(editor, { 
-        match: (draftNode: Node) => Element.isElement(draftNode) && (draftNode as DraftElement).type === 'tip',
+        match: (draftNode: Node) => Element.isElement(draftNode) && (draftNode as TipElement).type === 'tip',
         mode: 'highest'
       });
       setIsTipVisible(false);
     }
-  }, [editor]);
+  }, [editor, tip]);
 
   const showTip = useCallback((newTip: string) => {
     console.log("Showing tip:", newTip);
@@ -123,12 +114,13 @@ export function DraftBody() {
     if (isTipVisible) return;
 
     const currentText = DraftSerialization.serializeNodesToText(debouncedValue);
-    
+
+    console.log("Current text", currentText);
     getTip({ currentText }).then(showTip);
-  }, [debouncedValue, editor, isTipVisible, tip, clearTip, showTip]);
+  }, [debouncedValue, isTipVisible, showTip]);
 
   const onChange = useCallback((newValue: Descendant[]) => {
-    setValue(newValue as DraftNode[]);
+    setValue(newValue);
     console.log("Value changed", newValue);
   }, []);
 
@@ -136,8 +128,9 @@ export function DraftBody() {
     if (event.key === 'Tab' && tip) {
       event.preventDefault();
       acceptTip();
+    } else {
+      clearTip();
     }
-    clearTip();
   }, [tip, acceptTip, clearTip]);
 
   return (
