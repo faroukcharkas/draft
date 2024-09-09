@@ -22,7 +22,7 @@ function Editing({ value, onChange, handleToggleEdit }: { value: string; onChang
   />;
 }
 
-export function DraftTitle() {
+export function DocumentTitle() {
   const [title, setTitle] = useState("Untitled");
   const [isEditing, setIsEditing] = useState(false);
 

@@ -11,6 +11,7 @@ export type FormattedText = {
 
 export type TipElement = {
     type: 'tip'
+    tip: string
     children: Descendant[]
 }
 
@@ -37,6 +38,6 @@ export type DocumentText = FormattedText
 declare module 'slate' {
     interface CustomTypes {
         Element: DocumentElement
-        Text: DocumentText
+        // Text: DocumentText
     }
 }

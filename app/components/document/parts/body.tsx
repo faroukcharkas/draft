@@ -35,8 +35,9 @@ function insertTip(editor: ReactEditor, text: string) {
   const tip: TipElement = {
     type: 'tip',
     children: [
-      { text: text }
+      {text: ""}
     ],
+    tip: text
   }
   Transforms.insertNodes(editor, tip)
 }
@@ -65,7 +66,7 @@ async function getTip({ currentText }: { currentText: string }) {
   return data.tip;
 }
 
-export function DraftBody() {
+export function DocumentBody() {
   // Editor
   const renderElement = useCallback((props: RenderElementProps) => <RenderDraftElement {...props} />, [])
   const editor = useMemo(() => withTips(withReact(withHistory(createEditor()))), [])
@@ -82,7 +83,7 @@ export function DraftBody() {
     if (tip) {
       setTip(null);
       Transforms.removeNodes(editor, { 
-        match: (draftNode: Node) => Element.isElement(draftNode) && (draftNode as TipElement).type === 'tip',
+        match: (node: Node) => Element.isElement(node) && node.type === 'tip',
         mode: 'highest'
       });
       setIsTipVisible(false);
@@ -90,15 +91,11 @@ export function DraftBody() {
   }, [editor, tip]);
 
   const showTip = useCallback((newTip: string) => {
-    console.log("Showing tip:", newTip);
     if (newTip.length === 0 || newTip === tip) return;
     if (isTipVisible) {
-      console.log("Clearing tip");
       clearTip();
     }
-    console.log("Inserting tip");
     insertTip(editor, newTip);
-    console.log("Tip inserted");
     setTip(newTip);
     setIsTipVisible(true);
   }, [editor, isTipVisible, tip, clearTip]);

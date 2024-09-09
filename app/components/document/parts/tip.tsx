@@ -1,7 +1,13 @@
 import { motion } from "framer-motion";
 import { RenderElementProps } from 'slate-react';
 import { Fragment } from "react";
-export default function Tip({ children, attributes, element }: RenderElementProps) {
+import { TipElement } from "@/packages/document/src/types";
+
+type TipProps = RenderElementProps & {
+  element: TipElement
+}
+
+export default function Tip({ children, attributes, element }: TipProps) {
   return (
     <motion.span
       contentEditable={false}
@@ -12,6 +18,7 @@ export default function Tip({ children, attributes, element }: RenderElementProp
       transition={{ duration: 0.2, type: "spring", stiffness: 500, damping: 25 }}
     >
       <Fragment>
+        {element.tip}
         {children}
       </Fragment>
     </motion.span>
