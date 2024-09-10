@@ -89,7 +89,6 @@ export function DocumentBody() {
     [
       activePrediction,
       isUpdatingRef,
-      predictionLock,
       canGeneratePrediction,
       debouncedGeneratePrediction,
     ]
@@ -104,7 +103,7 @@ export function DocumentBody() {
     state.doc.nodesBetween(
       predStartPos,
       state.doc.content.size,
-      (node: ProseMirrorNode, pos: number) => {
+      (node: ProseMirrorNode) => {
         if (node.type.name === "prediction") {
           predictionNodeSize = node.nodeSize;
           return false;
@@ -133,7 +132,7 @@ export function DocumentBody() {
     state.doc.nodesBetween(
       predStartPos,
       state.doc.content.size,
-      (node: ProseMirrorNode, pos: number) => {
+      (node: ProseMirrorNode) => {
         if (node.type.name === "prediction") {
           predictionNodeSize = node.nodeSize;
           return false;
