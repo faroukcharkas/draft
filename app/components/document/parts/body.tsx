@@ -194,6 +194,7 @@ export function DocumentBody() {
     prediction: string,
     overlayed: boolean
   ) {
+    if (prediction.length === 0) return;
     isUpdatingRef.current = true;
     const offset = overlayed ? 1 : 0;
     const pos = state.selection.to;
