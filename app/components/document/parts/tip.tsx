@@ -54,23 +54,6 @@ export const Tip = Node.create({
     ];
   },
 
-  addKeyboardShortcuts() {
-    return {
-      Enter: () => {
-        return this.editor
-          .chain()
-          .insertContentAt(this.editor.state.selection.head, {
-            type: this.type.name,
-            attrs: {
-              tip: "Hello World",
-            },
-          })
-          .focus()
-          .run();
-      },
-    };
-  },
-
   renderHTML({ HTMLAttributes }) {
     return ["span", mergeAttributes(HTMLAttributes, { "data-tip": "" }), 0];
   },
