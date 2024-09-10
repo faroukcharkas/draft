@@ -1,26 +1,81 @@
+import { Node, mergeAttributes } from "@tiptap/core";
+import { ReactNodeViewRenderer, NodeViewWrapper } from "@tiptap/react";
 import { motion } from "framer-motion";
-import { RenderElementProps } from 'slate-react';
-import { Fragment } from "react";
-import { TipElement } from "@/packages/document/src/types";
+import React from "react";
+import { Node as ProseMirrorNode } from "@tiptap/pm/model";
 
-type TipProps = RenderElementProps & {
-  element: TipElement
-}
-
-export default function Tip({ children, attributes, element }: TipProps) {
+const TipComponent = ({ node }: { node: ProseMirrorNode }) => {
+  console.log(node.attrs);
   return (
-    <motion.span
-      contentEditable={false}
-      className="opacity-50 inline"
-      {...attributes}
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 0.5, y: 0 }}
-      transition={{ duration: 0.2, type: "spring", stiffness: 500, damping: 25 }}
+    <NodeViewWrapper
+      as="span"
+      className="inline"
     >
-      <Fragment>
-        {element.tip}
-        {children}
-      </Fragment>
-    </motion.span>
+      <motion.span
+        contentEditable={false}
+        className="opacity-50 inline"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 0.5, y: 0 }}
+        transition={{
+          duration: 0.2,
+          type: "spring",
+          stiffness: 500,
+          damping: 25,
+        }}
+      >
+        {node.attrs.tip}
+      </motion.span>
+    </NodeViewWrapper>
   );
-}
+};
+
+export const Tip = Node.create({
+  name: "tip",
+
+  group: "inline",
+
+  inline: true,
+
+  selectable: false,
+
+  addAttributes() {
+    return {
+      tip: {
+        default: "",
+      },
+    };
+  },
+
+  parseHTML() {
+    return [
+      {
+        tag: "span[data-tip]",
+      },
+    ];
+  },
+
+  addKeyboardShortcuts() {
+    return {
+      Enter: () => {
+        return this.editor
+          .chain()
+          .insertContentAt(this.editor.state.selection.head, {
+            type: this.type.name,
+            attrs: {
+              tip: "Hello World",
+            },
+          })
+          .focus()
+          .run();
+      },
+    };
+  },
+
+  renderHTML({ HTMLAttributes }) {
+    return ["span", mergeAttributes(HTMLAttributes, { "data-tip": "" }), 0];
+  },
+
+  addNodeView() {
+    return ReactNodeViewRenderer(TipComponent);
+  },
+});
