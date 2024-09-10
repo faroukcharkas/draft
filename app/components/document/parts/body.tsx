@@ -5,19 +5,26 @@ import { useDebounce } from "@uidotdev/usehooks";
 import debounce from "lodash.debounce";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
+import Underline from "@tiptap/extension-underline";
+import TextAlign from "@tiptap/extension-text-align";
 import { Prediction } from "./prediction";
 import { EditorView } from "@tiptap/pm/view";
 import { Node as ProseMirrorNode } from "@tiptap/pm/model";
 import { EditorState } from "@tiptap/pm/state";
+import { ToolBar } from "./tool-bar/tool-bar";
 
 const extensions = [
   StarterKit,
+  Underline,
   Placeholder.configure({
     placeholder: "Write something...",
     emptyEditorClass:
       "cursor-text before:content-[attr(data-placeholder)] opacity-50 before:absolute before-pointer-events-none",
   }),
   Prediction,
+  TextAlign.configure({
+    types: ["paragraph"],
+  }),
 ];
 
 async function getPrediction(currentText: string) {
@@ -229,6 +236,7 @@ export function DocumentBody() {
       <EditorProvider
         extensions={extensions}
         immediatelyRender={false}
+        slotBefore={<ToolBar />}
         editorProps={{
           attributes: {
             class:
