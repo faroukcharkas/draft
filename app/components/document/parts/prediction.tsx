@@ -4,8 +4,7 @@ import { motion } from "framer-motion";
 import React from "react";
 import { Node as ProseMirrorNode } from "@tiptap/pm/model";
 
-const TipComponent = ({ node }: { node: ProseMirrorNode }) => {
-  console.log(node.attrs);
+const PredictionComponent = ({ node }: { node: ProseMirrorNode }) => {
   return (
     <NodeViewWrapper
       as="span"
@@ -23,14 +22,14 @@ const TipComponent = ({ node }: { node: ProseMirrorNode }) => {
           damping: 25,
         }}
       >
-        {node.attrs.tip}
+        {node.attrs.prediction}
       </motion.span>
     </NodeViewWrapper>
   );
 };
 
-export const Tip = Node.create({
-  name: "tip",
+export const Prediction = Node.create({
+  name: "prediction",
 
   group: "inline",
 
@@ -40,7 +39,7 @@ export const Tip = Node.create({
 
   addAttributes() {
     return {
-      tip: {
+      prediction: {
         default: "",
       },
     };
@@ -49,16 +48,20 @@ export const Tip = Node.create({
   parseHTML() {
     return [
       {
-        tag: "span[data-tip]",
+        tag: "span[data-prediction]",
       },
     ];
   },
 
   renderHTML({ HTMLAttributes }) {
-    return ["span", mergeAttributes(HTMLAttributes, { "data-tip": "" }), 0];
+    return [
+      "span",
+      mergeAttributes(HTMLAttributes, { "data-prediction": "" }),
+      0,
+    ];
   },
 
   addNodeView() {
-    return ReactNodeViewRenderer(TipComponent);
+    return ReactNodeViewRenderer(PredictionComponent);
   },
 });

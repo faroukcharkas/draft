@@ -1,13 +1,14 @@
 "use client";
 import { EditorProvider } from "@tiptap/react";
 import { useState, useCallback, useRef } from "react";
+import { useDebounce } from "@uidotdev/usehooks";
 import debounce from "lodash.debounce";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
-import { Tip } from "./tip";
-import { Editor } from "@tiptap/core";
+import { Prediction } from "./prediction";
 import { EditorView } from "@tiptap/pm/view";
 import { Node as ProseMirrorNode } from "@tiptap/pm/model";
+import { EditorState } from "@tiptap/pm/state";
 
 const extensions = [
   StarterKit,
@@ -16,118 +17,212 @@ const extensions = [
     emptyEditorClass:
       "cursor-text before:content-[attr(data-placeholder)] opacity-50 before:absolute before-pointer-events-none",
   }),
-  Tip,
+  Prediction,
 ];
 
-async function getTip(currentText: string) {
+async function getPrediction(currentText: string) {
   if (!currentText || currentText.length === 0) return "";
-  const response = await fetch("/api/tip", {
+  const response = await fetch("/api/prediction", {
     method: "POST",
     body: JSON.stringify({ text: currentText }),
   });
   const data = await response.json();
-  return data.tip;
+  return data.prediction;
 }
 
 export function DocumentBody() {
-  const [activeTip, setActiveTip] = useState<{
-    pos: number;
-    tip: string;
+  const [activePrediction, setActivePrediction] = useState<{
+    startingPosition: number;
+    prediction: string;
   } | null>(null);
+  const [predictionLock, setPredictionLock] = useState(false);
+  const canGeneratePrediction = useDebounce(
+    !predictionLock,
+    predictionLock ? 0 : 3000
+  );
+
   const isUpdatingRef = useRef(false);
-
-  const debouncedHandleUpdate = useCallback(
-    debounce(({ editor }: { editor: Editor }) => {
-      if (activeTip || isUpdatingRef.current) return;
-      console.log("debouncedGetTip", editor.getText());
-      getTip(editor.getText()).then((tip) => {
-        if (tip.length === 0) return;
-        const editorText = editor.getText();
-        const trimmedTip = tip.trim().startsWith(editorText)
-          ? tip.slice(editorText.length).trim()
-          : tip;
-        if (trimmedTip.length === 0) return;
-        isUpdatingRef.current = true;
-        const pos = editor.state.selection.to;
-        editor
-          .chain()
-          .insertContent({
-            type: "tip",
-            attrs: { tip: trimmedTip },
-          })
-          .run();
-        setActiveTip({ pos, tip: trimmedTip });
-        isUpdatingRef.current = false;
-      });
-    }, 500),
-    [activeTip]
+  const debouncedGeneratePrediction = useCallback(
+    debounce((view: EditorView, state: EditorState) => {
+      generatePrediction(view, state, view.state.doc.textContent);
+    }, 1000),
+    []
   );
 
-  const handleUpdate = useCallback(
-    ({ editor }: { editor: Editor }) => {
-      if (!isUpdatingRef.current) {
-        if (activeTip) {
-          const currentPos = editor.state.selection.to;
-          if (
-            currentPos < activeTip.pos ||
-            currentPos > activeTip.pos + activeTip.tip.length
-          ) {
-            // Remove the active tip if cursor moves outside its range
-            editor
-              .chain()
-              .setTextSelection(activeTip.pos)
-              .deleteRange({
-                from: activeTip.pos,
-                to: activeTip.pos + activeTip.tip.length,
-              })
-              .run();
-            setActiveTip(null);
-          }
-        } else {
-          debouncedHandleUpdate({ editor });
-        }
-      }
-    },
-    [debouncedHandleUpdate, activeTip]
-  );
   const handleKeyDown = useCallback(
     (view: EditorView, event: KeyboardEvent) => {
-      if (event.key === "Tab" && activeTip) {
-        const { state } = view;
-        const tipNodes: { node: ProseMirrorNode; pos: number }[] = [];
-        state.doc.descendants((node, pos) => {
-          if (node.type.name === "tip") {
-            tipNodes.push({ node, pos });
-          }
-          return true;
-        });
-
-        if (tipNodes.length > 0) {
-          const { node, pos } = tipNodes[0];
-          const endPos = pos + node.nodeSize;
-          if (pos >= 0 && endPos <= state.doc.content.size) {
-            view.dispatch(
-              state.tr.deleteRange(pos, endPos).insertText(node.attrs.tip, pos)
-            );
-            setActiveTip(null);
-            return true;
-          }
+      const { state } = view;
+      if (activePrediction) {
+        switch (event.key) {
+          case "Tab":
+            // Accept the prediction
+            return acceptPrediction(view, state);
+          case "Backspace":
+            // Remove the prediction, and don't generate a new one
+            return rejectPrediction(view, state);
+          default:
+            // If the person is typing the same character as the prediction starts with, "fill in" the prediction
+            // Otherwise, delete the prediction
+            if (
+              event.key.length === 1 &&
+              activePrediction.prediction.startsWith(event.key)
+            ) {
+              return fillPrediction(view, state);
+            }
+            return rejectPrediction(view, state);
         }
-      } else if (activeTip) {
-        // Remove the active tip on any key press other than Tab
-        const { state } = view;
-        const startPos = activeTip.pos;
-        const endPos = activeTip.pos + activeTip.tip.length;
-        if (startPos >= 0 && endPos <= state.doc.content.size) {
-          view.dispatch(state.tr.deleteRange(startPos, endPos));
-          setActiveTip(null);
-          return true;
+      } else {
+        // Generate new prediction
+        if (
+          !isUpdatingRef.current &&
+          !event.ctrlKey &&
+          !event.metaKey &&
+          event.key.length === 1 &&
+          canGeneratePrediction
+        ) {
+          debouncedGeneratePrediction(view, state);
         }
       }
+      setPredictionLock(false);
       return false;
     },
-    [activeTip]
+    [
+      activePrediction,
+      isUpdatingRef,
+      predictionLock,
+      canGeneratePrediction,
+      debouncedGeneratePrediction,
+    ]
   );
+
+  function acceptPrediction(view: EditorView, state: EditorState) {
+    const { dispatch } = view;
+    if (!activePrediction) return false;
+
+    const predStartPos = activePrediction.startingPosition;
+    let predictionNodeSize = 0;
+    state.doc.nodesBetween(
+      predStartPos,
+      state.doc.content.size,
+      (node: ProseMirrorNode, pos: number) => {
+        if (node.type.name === "prediction") {
+          predictionNodeSize = node.nodeSize;
+          return false;
+        }
+      }
+    );
+    if (predictionNodeSize > 0) {
+      dispatch(
+        state.tr
+          .delete(predStartPos, predStartPos + predictionNodeSize)
+          .insertText(activePrediction.prediction, predStartPos)
+      );
+    }
+
+    setActivePrediction(null);
+    setPredictionLock(true); // Author accepted prediction, give them some time before generating again
+    return true;
+  }
+
+  function rejectPrediction(view: EditorView, state: EditorState) {
+    const { dispatch } = view;
+    if (!activePrediction) return false;
+
+    const predStartPos = activePrediction.startingPosition;
+    let predictionNodeSize = 0;
+    state.doc.nodesBetween(
+      predStartPos,
+      state.doc.content.size,
+      (node: ProseMirrorNode, pos: number) => {
+        if (node.type.name === "prediction") {
+          predictionNodeSize = node.nodeSize;
+          return false;
+        }
+      }
+    );
+    if (predictionNodeSize > 0) {
+      dispatch(
+        state.tr.delete(predStartPos, predStartPos + predictionNodeSize)
+      );
+    }
+
+    setActivePrediction(null);
+    setPredictionLock(true); // Author rejected prediction, give them some time before generating again
+    return true;
+  }
+
+  function fillPrediction(view: EditorView, state: EditorState) {
+    const { dispatch } = view;
+    if (!activePrediction) return false;
+    const predStartPos = activePrediction.startingPosition;
+    const predEndPos = predStartPos + activePrediction.prediction.length;
+    state.doc.nodesBetween(
+      predStartPos,
+      predEndPos,
+      (node: ProseMirrorNode, pos: number) => {
+        if (node.type.name === "prediction") {
+          dispatch(
+            state.tr
+              .deleteRange(pos, pos + node.nodeSize)
+              .insertText(node.attrs.prediction, pos)
+          );
+          setActivePrediction(null);
+          return false;
+        }
+      }
+    );
+    return true;
+  }
+
+  function overlayPrediction(
+    currentText: string,
+    prediction: string
+  ): { prediction: string; overlayed: boolean } {
+    console.log(currentText, prediction);
+    const trimmedPrediction = prediction.trim().startsWith(currentText)
+      ? prediction.slice(currentText.length).trim()
+      : prediction;
+    console.log(trimmedPrediction);
+    if (trimmedPrediction.length > 0) {
+      return { prediction: trimmedPrediction, overlayed: true };
+    }
+    return { prediction: "", overlayed: false };
+  }
+
+  function insertPrediction(
+    view: EditorView,
+    state: EditorState,
+    prediction: string,
+    overlayed: boolean
+  ) {
+    isUpdatingRef.current = true;
+    const offset = overlayed ? 1 : 0;
+    const pos = state.selection.to;
+    const predictionNode = view.state.schema.nodes.prediction.create({
+      prediction: prediction,
+    });
+    view.dispatch(view.state.tr.insert(pos + offset, predictionNode));
+    setActivePrediction({
+      startingPosition: pos + offset,
+      prediction: prediction,
+    });
+    isUpdatingRef.current = false; // Update the ref after inserting prediction
+  }
+
+  function generatePrediction(
+    view: EditorView,
+    state: EditorState,
+    currentText: string
+  ) {
+    isUpdatingRef.current = true;
+    getPrediction(currentText.trim()).then((prediction) => {
+      if (prediction.length > 0) {
+        const { prediction: overlayedPrediction, overlayed } =
+          overlayPrediction(currentText, prediction);
+        insertPrediction(view, state, overlayedPrediction, overlayed);
+      }
+    });
+  }
 
   return (
     <div className="flex flex-1 flex-col h-full">
@@ -139,11 +234,8 @@ export function DocumentBody() {
             class:
               "text-lg w-full h-full p-0 border-none outline-none bg-transparent",
           },
-          handleDOMEvents: {
-            keydown: handleKeyDown,
-          },
+          handleKeyDown,
         }}
-        onUpdate={handleUpdate}
       ></EditorProvider>
     </div>
   );
