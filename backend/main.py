@@ -1,21 +1,12 @@
+# external
 from fastapi import FastAPI
-from pydantic import BaseModel
+import uvicorn
 
 app = FastAPI()
 
-class PredictRequest(BaseModel):
-    textBeforeCursor: str
-    textAfterCursor: str
-
-class PredictResponse(BaseModel):
-    prediction: str
-
 @app.get("/")
 async def root():
-    return {"message": "Welcome to the Pentip API"}
+    return {"message": "Leave me alone."}
 
-@app.post("/predict", response_model=PredictResponse)
-async def predict(request: PredictRequest):
-    # TODO: Implement prediction logic
-    prediction = "Sample prediction"
-    return PredictResponse(prediction=prediction)
+def start():
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

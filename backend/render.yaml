@@ -1,7 +1,7 @@
 services:
   - type: web
-    runtime: pentip
-    env: python
+    name: pentip
+    runtime: python
     plan: free
     autoDeploy: false
     buildCommand: poetry install
