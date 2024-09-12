@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: newton
+    name: pentip
     runtime: python
     plan: free
     autoDeploy: false
