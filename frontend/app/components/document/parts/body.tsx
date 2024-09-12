@@ -12,6 +12,12 @@ import { EditorView } from "@tiptap/pm/view";
 import { Node as ProseMirrorNode } from "@tiptap/pm/model";
 import { EditorState } from "@tiptap/pm/state";
 import { ToolBar } from "./tool-bar/tool-bar";
+import { TextSelection } from "@tiptap/pm/state";
+
+interface TextBeforeAndAfterCursor {
+  before: string;
+  after: string;
+}
 
 const extensions = [
   StarterKit,
@@ -27,11 +33,11 @@ const extensions = [
   }),
 ];
 
-async function getPrediction(currentText: string) {
-  if (!currentText || currentText.length === 0) return "";
+async function getPrediction(text: TextBeforeAndAfterCursor) {
+  if (!text || (text.before + text.after).length === 0) return "";
   const response = await fetch("/api/prediction", {
     method: "POST",
-    body: JSON.stringify({ text: currentText }),
+    body: JSON.stringify(text),
   });
   const data = await response.json();
   return data.prediction;
@@ -49,12 +55,40 @@ export function DocumentBody() {
   );
 
   const isUpdatingRef = useRef(false);
-  const debouncedGeneratePrediction = useCallback(
-    debounce((view: EditorView, state: EditorState) => {
-      generatePrediction(view, state, view.state.doc.textContent);
-    }, 1000),
-    []
+  const debouncedGeneratePredictionRef = useRef<ReturnType<typeof debounce>>();
+
+  const createDebouncedGeneratePrediction = useCallback(() => {
+    return debounce((view: EditorView, state: EditorState) => {
+      console.log("Debounce reached");
+      generatePrediction(view, state);
+      isUpdatingRef.current = false;
+    }, 4000);
+  }, []);
+
+  const handleClick = useCallback(
+    (view: EditorView, event: MouseEvent) => {
+      if (isUpdatingRef.current && debouncedGeneratePredictionRef.current) {
+        debouncedGeneratePredictionRef.current.cancel();
+        debouncedGeneratePredictionRef.current =
+          createDebouncedGeneratePrediction();
+        debouncedGeneratePredictionRef.current(view, view.state);
+      }
+    },
+    [createDebouncedGeneratePrediction]
   );
+
+  const getCurrentTextBeforeAndAfterCursor = (
+    view: EditorView
+  ): TextBeforeAndAfterCursor => {
+    const docLength = view.state.doc.content.size;
+    return {
+      before: view.state.doc.textBetween(0, view.state.selection.$anchor.pos),
+      after: view.state.doc.textBetween(
+        view.state.selection.$anchor.pos,
+        docLength
+      ),
+    };
+  };
 
   const handleKeyDown = useCallback(
     (view: EditorView, event: KeyboardEvent) => {
@@ -84,21 +118,22 @@ export function DocumentBody() {
           !isUpdatingRef.current &&
           !event.ctrlKey &&
           !event.metaKey &&
-          event.key.length === 1 &&
+          ((event.key.length === 1 && event.key !== " ") ||
+            event.key === "Backspace") &&
           canGeneratePrediction
         ) {
-          debouncedGeneratePrediction(view, state);
+          isUpdatingRef.current = true;
+          if (!debouncedGeneratePredictionRef.current) {
+            debouncedGeneratePredictionRef.current =
+              createDebouncedGeneratePrediction();
+          }
+          debouncedGeneratePredictionRef.current(view, state);
         }
       }
       setPredictionLock(false);
       return false;
     },
-    [
-      activePrediction,
-      isUpdatingRef,
-      canGeneratePrediction,
-      debouncedGeneratePrediction,
-    ]
+    [activePrediction, canGeneratePrediction, createDebouncedGeneratePrediction]
   );
 
   function acceptPrediction(view: EditorView, state: EditorState) {
@@ -208,27 +243,41 @@ export function DocumentBody() {
     const predictionNode = view.state.schema.nodes.prediction.create({
       prediction: prediction,
     });
-    view.dispatch(view.state.tr.insert(pos + offset, predictionNode));
+    view.dispatch(
+      view.state.tr.insert(pos + offset, predictionNode).scrollIntoView()
+    );
+
     setActivePrediction({
       startingPosition: pos + offset,
       prediction: prediction,
     });
+
+    // Set the cursor position to the beginning of the prediction
+    view.dispatch(
+      view.state.tr.setSelection(
+        TextSelection.create(view.state.doc, pos + offset)
+      )
+    );
+
     isUpdatingRef.current = false; // Update the ref after inserting prediction
   }
 
-  function generatePrediction(
-    view: EditorView,
-    state: EditorState,
-    currentText: string
-  ) {
-    isUpdatingRef.current = true;
-    getPrediction(currentText.trim()).then((prediction) => {
-      if (prediction.length > 0) {
-        const { prediction: overlayedPrediction, overlayed } =
-          overlayPrediction(currentText, prediction);
-        insertPrediction(view, state, overlayedPrediction, overlayed);
+  function generatePrediction(view: EditorView, state: EditorState) {
+    const { before, after } = getCurrentTextBeforeAndAfterCursor(view);
+    if ((before + after).trim().length === 0) {
+      isUpdatingRef.current = false;
+      return;
+    }
+    getPrediction({ before: before.trim(), after: after.trim() }).then(
+      (prediction) => {
+        if (prediction.length > 0) {
+          const { prediction: overlayedPrediction, overlayed } =
+            overlayPrediction(before.trim(), prediction);
+          insertPrediction(view, state, overlayedPrediction, overlayed);
+          isUpdatingRef.current = false;
+        }
       }
-    });
+    );
   }
 
   return (
@@ -243,6 +292,7 @@ export function DocumentBody() {
               "text-lg w-full h-full p-0 border-none outline-none bg-transparent",
           },
           handleKeyDown,
+          onSelectionChange: handleSelectionChange,
         }}
       ></EditorProvider>
     </div>

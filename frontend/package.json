@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@pentip/ai": "workspace:*",
+    "@pentip/schema": "workspace:*",
     "@ai-sdk/openai": "^0.0.58",
     "@tiptap/core": "^2.6.6",
     "@tiptap/extension-placeholder": "^2.6.6",
