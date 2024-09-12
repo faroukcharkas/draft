@@ -6,7 +6,7 @@ from api.routes import api
 
 app = FastAPI()
 
-app.include_router(api)
+app.include_router(api, prefix="/api")
 
 @app.get("/")
 async def root():
