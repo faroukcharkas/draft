@@ -65,17 +65,17 @@ export function DocumentBody() {
     }, 4000);
   }, []);
 
-  const handleClick = useCallback(
-    (view: EditorView, event: MouseEvent) => {
-      if (isUpdatingRef.current && debouncedGeneratePredictionRef.current) {
-        debouncedGeneratePredictionRef.current.cancel();
-        debouncedGeneratePredictionRef.current =
-          createDebouncedGeneratePrediction();
-        debouncedGeneratePredictionRef.current(view, view.state);
-      }
-    },
-    [createDebouncedGeneratePrediction]
-  );
+  // const handleClick = useCallback(
+  //   (view: EditorView, event: MouseEvent) => {
+  //     if (isUpdatingRef.current && debouncedGeneratePredictionRef.current) {
+  //       debouncedGeneratePredictionRef.current.cancel();
+  //       debouncedGeneratePredictionRef.current =
+  //         createDebouncedGeneratePrediction();
+  //       debouncedGeneratePredictionRef.current(view, view.state);
+  //     }
+  //   },
+  //   [createDebouncedGeneratePrediction]
+  // );
 
   const getCurrentTextBeforeAndAfterCursor = (
     view: EditorView
@@ -292,7 +292,6 @@ export function DocumentBody() {
               "text-lg w-full h-full p-0 border-none outline-none bg-transparent",
           },
           handleKeyDown,
-          onSelectionChange: handleSelectionChange,
         }}
       ></EditorProvider>
     </div>

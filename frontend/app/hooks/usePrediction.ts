@@ -6,7 +6,7 @@ import debounce from "lodash.debounce";
 import { PredictRequest } from "@pentip/schema";
 
 const PREDICTION_DEBOUNCE_TIME: number = 1000;
-const PREDICTION_LOCK_TIME: number = 3000;
+// const PREDICTION_LOCK_TIME: number = 3000;
 
 export interface PredictionHook {
   isPredictionVisible: MutableRefObject<boolean>;
@@ -44,15 +44,15 @@ function getTextBeforeAndAfterCursor(
 export function usePrediction(): PredictionHook {
   const isFetching = useRef<boolean>(false);
   const isPredictionVisible = useRef<boolean>(false);
-  const isPredictionLocked = useRef<boolean>(false);
-  const canPredict = useRef(
-    debounce(
-      (value: boolean) => {
-        isPredictionLocked.current = value;
-      },
-      isPredictionLocked.current ? 0 : PREDICTION_LOCK_TIME
-    )
-  );
+  // const isPredictionLocked = useRef<boolean>(false);
+  // const canPredict = useRef(
+  //   debounce(
+  //     (value: boolean) => {
+  //       isPredictionLocked.current = value;
+  //     },
+  //     isPredictionLocked.current ? 0 : PREDICTION_LOCK_TIME
+  //   )
+  // );
 
   const predict = useCallback(
     debounce((view: EditorView) => {
@@ -82,20 +82,23 @@ export function usePrediction(): PredictionHook {
   );
 
   const displayPrediction = useCallback((view: EditorView) => {
-    const { dispatch } = view;
+    view;
+    // const { dispatch } = view;
   }, []);
 
   const acceptPrediction = useCallback((view: EditorView) => {
-    const { dispatch } = view;
+    view;
+    // const { dispatch } = view;
   }, []);
 
   const rejectPrediction = useCallback((view: EditorView) => {
-    const { dispatch } = view;
+    view;
+    // const { dispatch } = view;
   }, []);
 
   const handleKeyDown = useCallback(
     (view: EditorView, event: KeyboardEvent) => {
-      const { state } = view;
+      // const { state } = view;
       if (isPredictionVisible.current) {
         switch (event.key) {
           case "Tab":
@@ -113,6 +116,7 @@ export function usePrediction(): PredictionHook {
   const handleSelectionChange = useCallback(
     (editor: Editor, transaction: Transaction) => {
       const { state } = editor;
+      transaction;
       console.log(state.selection);
     },
     []
