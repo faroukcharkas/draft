@@ -1,5 +1,7 @@
-from api.routes import api
+from fastapi import APIRouter
 
-@api.post("/predict")
+predict_router = APIRouter()
+
+@predict_router.post("/predict")
 async def predict():
     return {"message": "This is the predict endpoint"}
