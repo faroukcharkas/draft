@@ -20,7 +20,13 @@ export interface PredictionHook {
   acceptPrediction: (view: EditorView) => void;
   rejectPrediction: (view: EditorView) => void;
   handleKeyDown: (view: EditorView, event: KeyboardEvent) => void;
-  handleSelectionChange: (editor: Editor, transaction: Transaction) => void;
+  handleSelectionChange: ({
+    editor,
+    transaction,
+  }: {
+    editor: Editor;
+    transaction: Transaction;
+  }) => void;
 }
 
 interface TextBeforeAndAfterCursor {
