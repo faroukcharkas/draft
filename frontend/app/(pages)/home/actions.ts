@@ -5,7 +5,7 @@ import { Tables } from "@/packages/schema";
 
 export async function getUser() {
   const supabase = createClient();
-  const { data, error } = await supabase.auth.getUser();
+  const { data } = await supabase.auth.getUser();
   return data;
 }
 
