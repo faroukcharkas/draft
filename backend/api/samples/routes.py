@@ -1,10 +1,13 @@
 # external
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
+
+# internal
+from api.samples.io import CreateWritingSampleInput
 
 samples_router: APIRouter = APIRouter(prefix="/samples")
 
 @samples_router.post("/create")
-async def create_samples():
+async def create_samples(request: Request, input: CreateWritingSampleInput):
     return {"message": "This is the create samples endpoint"}
 
 
