@@ -1,21 +1,18 @@
 export function BeginningOfText(): string {
   return `
-  Provide your suggestion below, using only plain text without any XML tags:
-  Suggestion:
+  Provide your suggestion below, using only plain text without any XML tags, and with no extra words:
   `;
 }
 
 export function MiddleOfText(): string {
   return `
-  Provide your suggestion below, using only plain text without any markup:
-  Suggestion:
+  Provide your suggestion below, using only plain text without any markup, and with no extra words:
   `;
 }
 
 export function EndOfText(): string {
   return `
-  Provide your suggestion below, using only plain text without any markup:
-  Suggestion:
+  Provide your suggestion below, using only plain text without any markup, and with no extra words:
   `;
 }
 

@@ -1,24 +1,29 @@
-import { useCallback, useRef, MutableRefObject } from "react";
+import { useCallback, useRef, MutableRefObject, useEffect } from "react";
 import { EditorView } from "@tiptap/pm/view";
 import { Editor } from "@tiptap/core";
-import { Transaction } from "@tiptap/pm/state";
+import { TextSelection, Transaction } from "@tiptap/pm/state";
 import debounce from "lodash.debounce";
+import { useState } from "react";
 import { PredictRequest } from "@pentip/schema";
+import { useDebounce } from "@uidotdev/usehooks";
+import { Node as ProseMirrorNode } from "@tiptap/pm/model";
 
 const PREDICTION_DEBOUNCE_TIME: number = 1000;
-// const PREDICTION_LOCK_TIME: number = 3000;
+const PREDICTION_LOCK_TIME: number = 3000;
 
-export interface PredictionHook {
+export interface UsePrediction {
   isPredictionVisible: MutableRefObject<boolean>;
   isFetching: MutableRefObject<boolean>;
-  predict: (view: EditorView) => void;
+  canPredict: boolean;
+  predict: () => Promise<void>;
   fetchPrediction: (
     textBeforeCursor: string,
     textAfterCursor: string
-  ) => Promise<string>;
-  displayPrediction: (view: EditorView) => void;
+  ) => Promise<string | null>;
+  displayPrediction: (editor: Editor, prediction: string) => void;
   acceptPrediction: (view: EditorView) => void;
   rejectPrediction: (view: EditorView) => void;
+  handleCreate: ({ editor }: { editor: Editor }) => void;
   handleKeyDown: (view: EditorView, event: KeyboardEvent) => void;
   handleSelectionChange: ({
     editor,
@@ -47,34 +52,48 @@ function getTextBeforeAndAfterCursor(
   };
 }
 
-export function usePrediction(): PredictionHook {
+export function usePrediction(): UsePrediction {
+  const _editor = useRef<Editor | null>(null);
   const isFetching = useRef<boolean>(false);
   const isPredictionVisible = useRef<boolean>(false);
-  // const isPredictionLocked = useRef<boolean>(false);
-  // const canPredict = useRef(
-  //   debounce(
-  //     (value: boolean) => {
-  //       isPredictionLocked.current = value;
-  //     },
-  //     isPredictionLocked.current ? 0 : PREDICTION_LOCK_TIME
-  //   )
-  // );
-
-  const predict = useCallback(
-    debounce((view: EditorView) => {
-      const predictRequest: PredictRequest = getTextBeforeAndAfterCursor(view);
-
-      fetchPrediction(
-        predictRequest.textBeforeCursor,
-        predictRequest.textAfterCursor
-      );
-    }, PREDICTION_DEBOUNCE_TIME),
-    [debounce]
+  const [isPredictionLocked, setIsPredictionLocked] = useState<boolean>(false);
+  const canPredict = useDebounce(
+    !isPredictionLocked,
+    !isPredictionLocked ? PREDICTION_LOCK_TIME : 0
+  );
+  const [selectionPosition, setSelectionPosition] = useState<number | null>(
+    null
+  );
+  const predictTrigger = useDebounce(
+    selectionPosition,
+    PREDICTION_DEBOUNCE_TIME
   );
 
+  useEffect(() => {
+    predict();
+  }, [predictTrigger]);
+
+  const predict = useCallback(async () => {
+    if (!canPredict || isPredictionVisible.current || !_editor.current) return;
+    const { textBeforeCursor, textAfterCursor } = getTextBeforeAndAfterCursor(
+      _editor.current.view
+    );
+    const prediction: string | null = await fetchPrediction(
+      textBeforeCursor,
+      textAfterCursor
+    );
+    if (prediction) {
+      displayPrediction(_editor.current, prediction);
+    }
+  }, []);
+
   const fetchPrediction = useCallback(
-    async (textBeforeCursor: string, textAfterCursor: string) => {
-      if (isFetching.current) return;
+    async (
+      textBeforeCursor: string,
+      textAfterCursor: string
+    ): Promise<string | null> => {
+      if (isFetching.current || !canPredict || isPredictionVisible.current)
+        return null;
       isFetching.current = true;
       const response = await fetch("/api/prediction", {
         method: "POST",
@@ -87,19 +106,62 @@ export function usePrediction(): PredictionHook {
     []
   );
 
-  const displayPrediction = useCallback((view: EditorView) => {
-    view;
-    // const { dispatch } = view;
-  }, []);
+  const displayPrediction = useCallback(
+    (editor: Editor, prediction: string) => {
+      if (isPredictionVisible.current) return;
+      const { state } = editor.view;
+      const { selection } = state;
+      const { from } = selection;
+      editor
+        .chain()
+        .insertContentAt(from, {
+          type: "prediction",
+          attrs: {
+            prediction: prediction,
+          },
+        })
+        .setTextSelection(from)
+        .run();
+      isPredictionVisible.current = true;
+      setIsPredictionLocked(true);
+    },
+    []
+  );
 
   const acceptPrediction = useCallback((view: EditorView) => {
-    view;
-    // const { dispatch } = view;
+    // Converts any displayed predictions into regular text
+    if (!isPredictionVisible.current) return;
+    view.state.doc.descendants((node: ProseMirrorNode, pos: number) => {
+      if (node.type.name === "prediction") {
+        const tr = view.state.tr;
+        const predictionText = node.attrs.prediction;
+        tr.replaceWith(
+          pos,
+          pos + node.nodeSize,
+          view.state.schema.text(predictionText)
+        );
+        tr.setSelection(
+          TextSelection.create(tr.doc, pos + predictionText.length + 1)
+        );
+        view.dispatch(tr);
+      }
+    });
+    isPredictionVisible.current = false;
+    setIsPredictionLocked(true);
   }, []);
 
   const rejectPrediction = useCallback((view: EditorView) => {
-    view;
-    // const { dispatch } = view;
+    // Removes all displayed predictions
+    if (!_editor.current) return;
+    const tr = view.state.tr;
+    view.state.doc.descendants((node: ProseMirrorNode, pos: number) => {
+      if (node.type.name === "prediction") {
+        tr.delete(pos, pos + node.nodeSize);
+      }
+    });
+    view.dispatch(tr);
+    isPredictionVisible.current = false;
+    setIsPredictionLocked(true);
   }, []);
 
   const handleKeyDown = useCallback(
@@ -108,8 +170,10 @@ export function usePrediction(): PredictionHook {
       if (isPredictionVisible.current) {
         switch (event.key) {
           case "Tab":
+            event.preventDefault();
             return acceptPrediction(view);
           case "Backspace":
+            event.preventDefault();
             return rejectPrediction(view);
           default:
             return rejectPrediction(view);
@@ -120,17 +184,26 @@ export function usePrediction(): PredictionHook {
   );
 
   const handleSelectionChange = useCallback(
-    (editor: Editor, transaction: Transaction) => {
-      const { state } = editor;
-      transaction;
-      console.log(state.selection);
+    async ({ editor }: { editor: Editor }) => {
+      // TODO: Check UX and performance implications of not checking
+      // if prediction is allowed before setting selection position
+      if (isPredictionVisible.current) {
+        rejectPrediction(editor.view);
+      }
+      // Prevent setting selection position if the selection is a highlight
+      setSelectionPosition(editor.view.state.selection.anchor);
     },
     []
   );
 
+  const handleCreate = useCallback(({ editor }: { editor: Editor }) => {
+    _editor.current = editor;
+  }, []);
+
   return {
     isFetching,
     isPredictionVisible,
+    canPredict,
     predict,
     fetchPrediction,
     displayPrediction,
@@ -138,5 +211,6 @@ export function usePrediction(): PredictionHook {
     rejectPrediction,
     handleKeyDown,
     handleSelectionChange,
+    handleCreate,
   };
 }
