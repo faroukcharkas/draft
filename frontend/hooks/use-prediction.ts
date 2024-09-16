@@ -141,7 +141,7 @@ export function usePrediction(): UsePrediction {
           view.state.schema.text(predictionText)
         );
         tr.setSelection(
-          TextSelection.create(tr.doc, pos + predictionText.length + 1)
+          TextSelection.create(tr.doc, pos + predictionText.length)
         );
         view.dispatch(tr);
       }

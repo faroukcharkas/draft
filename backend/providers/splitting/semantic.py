@@ -6,8 +6,9 @@ from tokenizers import Tokenizer
 from .base import BaseSplittingProvider
 
 class SemanticSplittingProvider(BaseSplittingProvider):
-    def split(self, original_text: str) -> list[str]:
+    @staticmethod
+    def split(original_text: str) -> list[str]:
         tokenizer: Tokenizer = Tokenizer.from_pretrained("bert-base-uncased")
-        splitter: TextSplitter = TextSplitter.from_huggingface_tokenizer(tokenizer, trim=True)
+        splitter: TextSplitter = TextSplitter.from_huggingface_tokenizer(tokenizer, trim=True, capacity=(50, 1500))
         chunks: list[str] = splitter.chunks(original_text)
         return chunks

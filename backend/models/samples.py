@@ -6,8 +6,8 @@ from enum import Enum
 from pydantic import BaseModel
 
 class WritingSampleStyleType(str, Enum):
-    FORMAL = "formal"
-    CASUAL = "casual"
+    FORMAL = "FORMAL"
+    CASUAL = "CASUAL"
 
 class WritingSample(BaseModel):
     id: UUID

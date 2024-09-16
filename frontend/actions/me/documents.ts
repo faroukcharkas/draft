@@ -3,15 +3,15 @@
 import { createClient } from "@/utils/supabase/server";
 import { Tables } from "@/packages/schema";
 
+const supabase = createClient();
+
 export async function getUser() {
-  const supabase = createClient();
   const { data } = await supabase.auth.getUser();
   return data;
 }
 
 export async function getUserDocuments() {
   console.log("getUserDocuments");
-  const supabase = createClient();
   const { data: user } = await supabase.auth.getUser();
 
   if (!user.user) {

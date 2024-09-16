@@ -1,7 +1,7 @@
-import { getUserDocuments } from "./actions";
+import { getUserDocuments } from "@/actions/me/documents";
 import Link from "next/link";
 
-export default async function Home() {
+export default async function Me() {
   const documents = await getUserDocuments();
 
   return (

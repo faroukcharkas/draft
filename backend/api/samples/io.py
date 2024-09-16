@@ -1,3 +1,6 @@
+# builtin
+from uuid import UUID
+
 # external
 from pydantic import BaseModel
 
@@ -5,5 +8,6 @@ from pydantic import BaseModel
 from models.samples import WritingSampleStyleType
 
 class CreateWritingSampleInput(BaseModel):
-    content: str
+    author_id: UUID
+    text: str
     style: WritingSampleStyleType

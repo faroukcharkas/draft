@@ -15,7 +15,6 @@ SUPABASE_ANON_KEY: str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhY
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("os", os.environ)
     supabase: SupabaseClient = create_client(
         supabase_url=SUPABASE_URL,
         supabase_key=SUPABASE_ANON_KEY,
