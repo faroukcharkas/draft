@@ -4,6 +4,7 @@ version = "0.1.0"
 description = ""
 authors = ["None"]
 readme = "BACKEND.md"
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.11"
@@ -13,6 +14,9 @@ uvicorn = "^0.30.6"
 supabase = "^2.7.4"
 semantic-text-splitter = "^0.16.1"
 tokenizers = "^0.20.0"
+openai = "^1.45.0"
+pinecone = {extras = ["grpc"], version = "^5.1.0"}
+prompt = {path = "../backend/packages/prompt", develop = true}
 
 [build-system]
 requires = ["poetry-core"]
