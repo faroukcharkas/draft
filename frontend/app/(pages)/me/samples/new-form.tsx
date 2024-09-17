@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormField, FormLabel, FormControl } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { createSample } from "@/actions/sample/create";
+import { createSample } from "@/actions/samples/create";
 import {
   Select,
   SelectTrigger,

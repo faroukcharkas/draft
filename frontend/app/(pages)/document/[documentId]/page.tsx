@@ -9,7 +9,7 @@ export default async function DocumentPage({
   const document = await getDocument(params.documentId);
 
   return (
-    <div className="flex h-screen w-screen">
+    <div className="flex h-screen w-screen bg-gradient-to-b from-[#ECECEC] to-[#DEDEDE]">
       <main className="flex flex-1 justify-center">
         {document ? (
           <Document initialDocument={document} />

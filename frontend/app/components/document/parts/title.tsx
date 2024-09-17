@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useDebounce } from "@uidotdev/usehooks";
-import { saveDocumentTitle } from "../../../../actions/document/save";
+import { saveDocumentTitle } from "../../../../actions/documents/save";
 
 function NotEditing({
   value,

@@ -12,7 +12,7 @@ import {
 export function ToolBar() {
   const { editor } = useCurrentEditor();
   return (
-    <div className="flex flex-row mb-4 bg-white rounded-2xl p-2 border border-gray-200">
+    <div className="flex flex-row mb-4 bg-gradient-to-b from-[#EFEFEF] to-[#ECECEC] rounded-2xl p-2 border border-gray-200">
       <SingleIconToggle
         onClick={() => {
           editor?.chain().toggleBold().run();

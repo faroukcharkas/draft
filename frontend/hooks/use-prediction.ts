@@ -2,12 +2,12 @@ import { useCallback, useRef, MutableRefObject, useEffect } from "react";
 import { EditorView } from "@tiptap/pm/view";
 import { Editor } from "@tiptap/core";
 import { TextSelection, Transaction } from "@tiptap/pm/state";
-import debounce from "lodash.debounce";
 import { useState } from "react";
-import { PredictRequest } from "@pentip/schema";
+import { diffWords } from "diff";
+import { Change } from "diff";
 import { useDebounce } from "@uidotdev/usehooks";
 import { Node as ProseMirrorNode } from "@tiptap/pm/model";
-
+import { predict as predictAction } from "@/actions/predictions/predict";
 const PREDICTION_DEBOUNCE_TIME: number = 1000;
 const PREDICTION_LOCK_TIME: number = 3000;
 
@@ -95,35 +95,55 @@ export function usePrediction(): UsePrediction {
       if (isFetching.current || !canPredict || isPredictionVisible.current)
         return null;
       isFetching.current = true;
-      const response = await fetch("/api/prediction", {
-        method: "POST",
-        body: JSON.stringify({ textBeforeCursor, textAfterCursor }),
-      });
-      const data = await response.json();
+      const prediction: string | null = await predictAction(
+        textBeforeCursor,
+        textAfterCursor
+      );
       isFetching.current = false;
-      return data.prediction;
+      return prediction;
     },
     []
   );
-
   const displayPrediction = useCallback(
     (editor: Editor, prediction: string) => {
       if (isPredictionVisible.current) return;
       const { state } = editor.view;
       const { selection } = state;
       const { from } = selection;
-      editor
-        .chain()
-        .insertContentAt(from, {
-          type: "prediction",
-          attrs: {
-            prediction: prediction,
-          },
-        })
-        .setTextSelection(from)
-        .run();
-      isPredictionVisible.current = true;
-      setIsPredictionLocked(true);
+
+      // Get the current text from the cursor position to the end of the document
+      const currentText = state.doc.textBetween(0, state.doc.content.size);
+      console.log(currentText);
+      console.log(prediction);
+      const parts: Change[] = diffWords(currentText, prediction);
+
+      console.log(parts);
+
+      let insertPosition = from;
+      let predictionContent = "";
+
+      for (const change of parts) {
+        if (change.added) {
+          predictionContent += change.value;
+        } else if (change.removed) {
+          insertPosition += change.count ?? 0;
+        }
+      }
+
+      if (predictionContent.length > 0) {
+        editor
+          .chain()
+          .insertContentAt(insertPosition, {
+            type: "prediction",
+            attrs: {
+              prediction: predictionContent,
+            },
+          })
+          .setTextSelection(insertPosition)
+          .run();
+        isPredictionVisible.current = true;
+        setIsPredictionLocked(true);
+      }
     },
     []
   );

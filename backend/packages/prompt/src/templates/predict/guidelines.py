@@ -1,7 +1,10 @@
-def mimic_tone_and_style() -> str:
-    return """
-    Mimic the tone and style of the existing text in your suggestion.
-    """
+MimicToneAndStyle: str = """
+Mimic the tone and style of the existing text in your suggestion.
+"""
+
+NoEllipsis: str = """
+Do not use ellipsis (...) in your suggestion.
+"""
 
 def beginning_of_text() -> str:
     """
@@ -13,7 +16,8 @@ def beginning_of_text() -> str:
     2. If a beginning is needed, create a short, engaging sentence that leads into the user's text.
     3. Ensure your suggestion matches the tone and style of the existing text.
     4. Consider the context and subject matter when making your suggestion.
-    5. {mimic_tone_and_style()}
+    5. {NoEllipsis}
+    6. {MimicToneAndStyle}
     """
 
 def middle_of_text() -> str:
@@ -31,7 +35,8 @@ def middle_of_text() -> str:
     2. If multiple options are viable, choose the most natural-sounding suggestion.
     3. Double-check that your suggestion flows smoothly.
     4. If the text is perfect, return a substring of the text.
-    5. {mimic_tone_and_style()}
+    5. {NoEllipsis}
+    6. {MimicToneAndStyle}
     """
 
 def end_of_text() -> str:
@@ -48,7 +53,8 @@ def end_of_text() -> str:
     1. Match tone and style of existing text.
     2. Incorporate existing text for continuity if possible.
     3. Avoid unnecessary information or meaning changes.
-    4. {mimic_tone_and_style()}
+    4. {NoEllipsis}
+    5. {MimicToneAndStyle}
     """
 
 def PredictGuidelines(before: str, after: str) -> str:

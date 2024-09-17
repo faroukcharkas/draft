@@ -44,7 +44,6 @@ export function DocumentBody({
         content={content as Content}
         immediatelyRender={false}
         slotBefore={<ToolBar />}
-        slotAfter={canPredict ? "can predict" : "RIP can't"}
         editorProps={{
           attributes: {
             class:

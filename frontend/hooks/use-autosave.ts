@@ -1,5 +1,5 @@
 import { useCallback, useState, useEffect } from "react";
-import { saveDocumentBody } from "@/actions/document/save";
+import { saveDocumentBody } from "@/actions/documents/save";
 import { Json } from "@/packages/schema";
 import { useDebounce } from "@uidotdev/usehooks";
 import { EditorEvents } from "@tiptap/core";
