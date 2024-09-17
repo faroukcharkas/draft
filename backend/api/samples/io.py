@@ -8,6 +8,6 @@ from pydantic import BaseModel
 from models.samples import WritingSampleStyleType
 
 class CreateWritingSampleInput(BaseModel):
-    author_id: UUID
+    user_id: UUID
     text: str
     style: WritingSampleStyleType

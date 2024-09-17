@@ -25,13 +25,13 @@ export async function getAuthorFromUserId(
 }
 
 export async function getSamplesFromAuthor(
-  authorId: string
+  userId: string
 ): Promise<Tables<"writing_sample">[] | null> {
   const supabase = createClient();
   const { data } = await supabase
     .from("writing_sample")
     .select("*")
-    .eq("author_id", authorId);
+    .eq("user_id", userId);
   return data;
 }
 

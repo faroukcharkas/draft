@@ -15,18 +15,6 @@ export async function createSample(data: {
     throw new Error("User not authenticated");
   }
 
-  const { data: author } = await supabase
-    .from("author")
-    .select("id")
-    .eq("user_id", user.data.user.id)
-    .single();
-
-  if (!author) {
-    throw new Error("Author not found");
-  }
-
-  console.log("Author ID", author.id);
-
   const response = await fetch(
     `${process.env.BACKEND_URL}/api/v1/samples/create`,
     {
@@ -38,7 +26,7 @@ export async function createSample(data: {
       body: JSON.stringify({
         text: data.text,
         style: data.style,
-        author_id: author.id,
+        user_id: user.data.user.id,
       }),
     }
   );

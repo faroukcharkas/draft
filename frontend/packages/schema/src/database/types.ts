@@ -76,6 +76,7 @@ export type Database = {
           created_at: string
           id: string
           sample_id: string | null
+          text: string
           writing_style: Database["public"]["Enums"]["writing_style"]
         }
         Insert: {
@@ -83,6 +84,7 @@ export type Database = {
           created_at?: string
           id?: string
           sample_id?: string | null
+          text: string
           writing_style: Database["public"]["Enums"]["writing_style"]
         }
         Update: {
@@ -90,6 +92,7 @@ export type Database = {
           created_at?: string
           id?: string
           sample_id?: string | null
+          text?: string
           writing_style?: Database["public"]["Enums"]["writing_style"]
         }
         Relationships: [
@@ -129,21 +132,32 @@ export type Database = {
           created_at: string
           id: string
           text: string | null
+          user_id: string | null
           writing_style: Database["public"]["Enums"]["writing_style"]
         }
         Insert: {
           created_at?: string
           id?: string
           text?: string | null
+          user_id?: string | null
           writing_style: Database["public"]["Enums"]["writing_style"]
         }
         Update: {
           created_at?: string
           id?: string
           text?: string | null
+          user_id?: string | null
           writing_style?: Database["public"]["Enums"]["writing_style"]
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "writing_sample_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

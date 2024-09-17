@@ -17,14 +17,14 @@ logger = logging.getLogger(__name__)
 
 samples_router: APIRouter = APIRouter(prefix="/samples")
 
-async def insert_and_upsert_chunk(supabase: SupabaseClient, openai: AsyncOpenAI, writing_samples_index: PineconeIndex, sample_id: UUID, author_id: UUID, writing_style: WritingSampleStyleType, chunks: list[str]):
+async def insert_and_upsert_chunk(supabase: SupabaseClient, openai: AsyncOpenAI, writing_samples_index: PineconeIndex, sample_id: UUID, user_id: UUID, writing_style: WritingSampleStyleType, chunks: list[str]):
     vectors = []
     for chunk in chunks:
         response = supabase.table("sample_chunk").upsert({
             "sample_id": str(sample_id),
             "text": chunk,
             "writing_style": writing_style.value,
-            "author_id": str(author_id),
+            "user_id": str(user_id),
         }).execute()
         if len(response.data) == 0:
             raise HTTPException(status_code=500, detail="Failed to create sample chunk")
@@ -36,7 +36,7 @@ async def insert_and_upsert_chunk(supabase: SupabaseClient, openai: AsyncOpenAI,
             "values": embedding_vector,
             "metadata": {
                 "sample_id": str(sample_id),
-                "author_id": str(author_id),
+                "user_id": str(user_id),
                 "writing_style": writing_style.value,
                 "text": chunk,
             }
@@ -52,12 +52,12 @@ async def create_samples(request: Request, input: CreateWritingSampleInput):
     writing_samples_index: PineconeIndex = request.app.state.writing_samples_index
     # 2. Ceate writing sample in Supabase
     print({
-        "author_id": str(input.author_id),
+        "user_id": str(input.user_id),
         "writing_style": input.style,
         "text": input.text,
     })
     response = supabase.table("writing_sample").insert({
-        "author_id": str(input.author_id),
+        "user_id": str(input.user_id),
         "writing_style": input.style.value,
         "text": input.text,
     }).execute()
@@ -69,7 +69,7 @@ async def create_samples(request: Request, input: CreateWritingSampleInput):
     # 3. Chunk up the text sementically
     chunks: list[str] = SemanticSplittingProvider.split(original_text=input.text)
     # 4. Create writing sample chunks in Supabase
-    await insert_and_upsert_chunk(supabase=supabase, openai=openai, writing_samples_index=writing_samples_index, sample_id=UUID(writing_sample["id"]), author_id=input.author_id, writing_style=input.style, chunks=chunks)
+    await insert_and_upsert_chunk(supabase=supabase, openai=openai, writing_samples_index=writing_samples_index, sample_id=UUID(writing_sample["id"]), user_id=input.user_id, writing_style=input.style, chunks=chunks)
     return {"message": "Chunks created"}
     
 

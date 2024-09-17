@@ -24,7 +24,7 @@ async def predict(request: Request, input: PredictInput) -> PredictOutput:
         top_k=3,
         include_values=False,
         include_metadata=True,
-        filter={"author_id": str(input.authorId)}
+        filter={"user_id": str(input.authorId)}
     )
     samples: list[str] = [sample.metadata["text"] for sample in query_response.matches]
 
