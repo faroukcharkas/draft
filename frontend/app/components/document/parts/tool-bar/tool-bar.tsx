@@ -8,11 +8,20 @@ import {
   AlignLeft as AlignLeftIcon,
   AlignRight as AlignRightIcon,
 } from "iconoir-react/regular";
+import { cx } from "class-variance-authority";
+
+const toolBarStyle = cx([
+  "flex flex-row mb-4 min-h-[48px] rounded-2xl p-1 gap-1",
+  "bg-gradient-to-b from-[#f8f8f8] to-[#f5f5f5]",
+  "border-t-[2px] border-[#fdfdfd]",
+  "shadow-md",
+]);
 
 export function ToolBar() {
   const { editor } = useCurrentEditor();
+  const iconSize = 24;
   return (
-    <div className="flex flex-row mb-4 bg-gradient-to-b from-[#EFEFEF] to-[#ECECEC] rounded-2xl p-2 border border-gray-200">
+    <div className={toolBarStyle}>
       <SingleIconToggle
         onClick={() => {
           editor?.chain().toggleBold().run();
@@ -20,8 +29,8 @@ export function ToolBar() {
         isToggled={editor?.isActive("bold") ?? false}
         icon={
           <BoldIcon
-            width={20}
-            height={20}
+            width={iconSize}
+            height={iconSize}
           />
         }
       />
@@ -32,8 +41,8 @@ export function ToolBar() {
         isToggled={editor?.isActive("italic") ?? false}
         icon={
           <ItalicIcon
-            width={20}
-            height={20}
+            width={iconSize}
+            height={iconSize}
           />
         }
       />
@@ -44,8 +53,8 @@ export function ToolBar() {
         isToggled={editor?.isActive("underline") ?? false}
         icon={
           <UnderlineIcon
-            width={20}
-            height={20}
+            width={iconSize}
+            height={iconSize}
           />
         }
       />
@@ -56,8 +65,8 @@ export function ToolBar() {
         isToggled={editor?.isActive("textAlign", "left") ?? false}
         icon={
           <AlignLeftIcon
-            width={20}
-            height={20}
+            width={iconSize}
+            height={iconSize}
           />
         }
       />
@@ -68,8 +77,8 @@ export function ToolBar() {
         isToggled={editor?.isActive("textAlign", "center") ?? false}
         icon={
           <AlignCenterIcon
-            width={20}
-            height={20}
+            width={iconSize}
+            height={iconSize}
           />
         }
       />
@@ -80,8 +89,8 @@ export function ToolBar() {
         isToggled={editor?.isActive("textAlign", "right") ?? false}
         icon={
           <AlignRightIcon
-            width={20}
-            height={20}
+            width={iconSize}
+            height={iconSize}
           />
         }
       />

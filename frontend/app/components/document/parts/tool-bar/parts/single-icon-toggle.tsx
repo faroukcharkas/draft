@@ -1,12 +1,19 @@
 import { cva, type VariantProps } from "class-variance-authority";
 
 const buttonStyles = cva(
-  "p-1 rounded-md transition-colors duration-200 ease-in-out",
+  [
+    "h-[40px] w-[40px] rounded-xl transition-colors duration-200 ease-in-out",
+    "flex items-center justify-center",
+  ],
   {
     variants: {
       isToggled: {
-        true: "bg-gray-200 text-gray-700 hover:bg-gray-300",
-        false: "bg-transparent",
+        true: [
+          "bg-gradient-to-b from-[#FDFDFD] to-[#F5F5F5] text-gray-700 hover:bg-gray-300",
+          "shadow-md",
+          "border-t border-[white]",
+        ],
+        false: ["bg-transparent text-gray-600"],
       },
     },
     defaultVariants: {
