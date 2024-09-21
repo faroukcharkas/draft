@@ -1,5 +1,5 @@
 # external
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, HTTPException
 from pinecone import Index as PineconeIndex
 from openai import AsyncOpenAI
 
@@ -11,6 +11,9 @@ predict_router: APIRouter = APIRouter(prefix="/predictions")
 
 @predict_router.post("/predict")
 async def predict(request: Request, input: PredictInput) -> PredictOutput:
+    user_id: str = request.headers.get("x-user-id")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="User ID not provided")
     writing_samples_index: PineconeIndex = request.app.state.writing_samples_index
     openai: AsyncOpenAI = request.app.state.client
 
@@ -24,7 +27,7 @@ async def predict(request: Request, input: PredictInput) -> PredictOutput:
         top_k=3,
         include_values=False,
         include_metadata=True,
-        filter={"user_id": str(input.authorId)}
+        filter={"user_id": user_id}
     )
     samples: list[str] = [sample.metadata["text"] for sample in query_response.matches]
 

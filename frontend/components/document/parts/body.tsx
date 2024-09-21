@@ -5,6 +5,7 @@ import Placeholder from "@tiptap/extension-placeholder";
 import Underline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
 import { Prediction } from "./prediction";
+import InlineMenu from "./inline-menu/inline-menu";
 import { ToolBar } from "./tool-bar/tool-bar";
 import { Json } from "@/packages/schema";
 import { usePrediction } from "@/hooks/use-prediction";
@@ -54,7 +55,9 @@ export function DocumentBody({
         onCreate={handleCreate}
         onUpdate={handleUpdate}
         onSelectionUpdate={handleSelectionChange}
-      ></EditorProvider>
+      >
+        <InlineMenu />
+      </EditorProvider>
     </div>
   );
 }

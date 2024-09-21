@@ -1,4 +1,4 @@
-import Document from "@/app/components/document/document";
+import Document from "@/components/document/document";
 import { getDocument } from "./actions";
 import { ArrowLeft as ArrowLeftIcon } from "iconoir-react/regular";
 import Link from "next/link";

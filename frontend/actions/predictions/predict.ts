@@ -13,16 +13,6 @@ export async function predict(
     throw new Error("User not authenticated");
   }
 
-  const { data: author } = await supabase
-    .from("author")
-    .select("id")
-    .eq("user_id", user.data.user.id)
-    .single();
-
-  if (!author) {
-    throw new Error("Author not found");
-  }
-
   const response = await fetch(
     `${process.env.BACKEND_URL}/api/v1/predictions/predict`,
     {
@@ -34,7 +24,6 @@ export async function predict(
       body: JSON.stringify({
         textBeforeCursor,
         textAfterCursor,
-        authorId: author.id,
       }),
     }
   );

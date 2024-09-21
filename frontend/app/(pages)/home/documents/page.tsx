@@ -1,8 +1,7 @@
 import { getUserDocuments } from "@/actions/me/documents";
 import Link from "next/link";
 import { Tables } from "@/packages/schema";
-import { Plus as PlusIcon } from "iconoir-react/regular";
-import { Button } from "@/components/ui/button";
+import Header from "./parts/header";
 
 function Document({ document }: { document: Tables<"document"> }) {
   return (
@@ -20,18 +19,10 @@ export default async function DocumentsPage() {
   const documents = await getUserDocuments();
 
   return (
-    <div className="flex flex-col h-screen w-screen bg-gradient-to-b from-[#fbfbfb] to-[#f7f7f7]">
-      <header className="flex h-[60px] p-5 items-center border-b">
-        <h1 className="text-2xl font-bold">Pentip</h1>
-      </header>
+    <div className="flex flex-col h-screen bg-gradient-to-b from-[#fbfbfb] to-[#f7f7f7]">
+      <Header />
       <main className="flex-1 p-8">
-        <div className="flex flex-row justify-between mb-4">
-          <h1 className="text-2xl font-bold">Documents</h1>
-          <Button>
-            <PlusIcon />
-            New
-          </Button>
-        </div>
+        <div className="flex flex-row justify-between mb-4"></div>
         {documents && documents.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-4">
             {documents.map((doc) => (
