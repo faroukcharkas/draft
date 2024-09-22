@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import React from "react";
 import { Node as ProseMirrorNode } from "@tiptap/pm/model";
 
-const PredictionComponent = ({ node }: { node: ProseMirrorNode }) => {
+const SuggestionComponent = ({ node }: { node: ProseMirrorNode }) => {
   return (
     <NodeViewWrapper
       as="span"
@@ -22,14 +22,14 @@ const PredictionComponent = ({ node }: { node: ProseMirrorNode }) => {
           damping: 25,
         }}
       >
-        {node.attrs.prediction}
+        {node.attrs.suggestion}
       </motion.span>
     </NodeViewWrapper>
   );
 };
 
-export const Prediction = Node.create({
-  name: "prediction",
+export const Suggestion = Node.create({
+  name: "suggestion",
 
   group: "inline",
 
@@ -39,7 +39,7 @@ export const Prediction = Node.create({
 
   addAttributes() {
     return {
-      prediction: {
+      suggestion: {
         default: "",
       },
     };
@@ -48,7 +48,7 @@ export const Prediction = Node.create({
   parseHTML() {
     return [
       {
-        tag: "span[data-prediction]",
+        tag: "span[data-suggestion]",
       },
     ];
   },
@@ -56,12 +56,12 @@ export const Prediction = Node.create({
   renderHTML({ HTMLAttributes }) {
     return [
       "span",
-      mergeAttributes(HTMLAttributes, { "data-prediction": "" }),
+      mergeAttributes(HTMLAttributes, { "data-suggestion": "" }),
       0,
     ];
   },
 
   addNodeView() {
-    return ReactNodeViewRenderer(PredictionComponent);
+    return ReactNodeViewRenderer(SuggestionComponent);
   },
 });

@@ -4,11 +4,11 @@ import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
 import Underline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
-import { Prediction } from "./prediction";
+import { Suggestion } from "../parts/suggestion";
 import InlineMenu from "./inline-menu/inline-menu";
 import { ToolBar } from "./tool-bar/tool-bar";
 import { Json } from "@/packages/schema";
-import { usePrediction } from "@/hooks/use-prediction";
+import { useSuggestion } from "@/hooks/use-suggestion";
 import { Content } from "@tiptap/react";
 import { useAutosave } from "@/hooks/use-autosave";
 const extensions = [
@@ -19,7 +19,7 @@ const extensions = [
     emptyEditorClass:
       "cursor-text before:content-[attr(data-placeholder)] opacity-50 before:absolute before-pointer-events-none",
   }),
-  Prediction,
+  Suggestion,
   TextAlign.configure({
     types: ["paragraph"],
   }),
@@ -35,8 +35,8 @@ export function DocumentBody({
     initialContent: initialBody,
     documentId,
   });
-  const { handleKeyDown, handleSelectionChange, canPredict, handleCreate } =
-    usePrediction();
+  const { handleKeyDown, handleSelectionChange, canSuggest, handleCreate } =
+    useSuggestion();
 
   return (
     <div className="flex flex-1 flex-col h-full">

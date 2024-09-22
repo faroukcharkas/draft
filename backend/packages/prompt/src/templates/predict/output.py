@@ -1,21 +1,21 @@
-from .components import Hole
+OnlyAFewWordsOfPadding: str = "The author will have trouble locating where to implement your suggestion. Sorround your suggestion with words from the author's text to help them locate where to implement your suggestion:"
 
 def beginning_of_text():
-    return f"""
-    Provide your suggestion for the {Hole}, either as a good introduction or a revision of the existing text, as a substring of the ideal passage:
+    return """
+    Provide the introduction to the passage. {OnlyAFewWordsOfPadding}:
     """
 
 def middle_of_text():
-    return f"""
-    Provide your revision or suggestion for the {Hole} as a substring of the ideal passage:
+    return """
+    Provide your revision or suggestion for the passage. {OnlyAFewWordsOfPadding}:
     """
 
 def end_of_text():
-    return f"""
-    Provide your revision or prediction for the {Hole} as a substring of the ideal passage:
+    return """
+    Provide your revision or prediction for the passage. {OnlyAFewWordsOfPadding}:
     """
 
-def PredictOutput(before: str, after: str) -> str:
+def SuggestOutput(before: str, after: str) -> str:
     if len(before) == 0:
         return beginning_of_text()
     elif len(after) == 0:

@@ -7,22 +7,23 @@ import { diffWords } from "diff";
 import { Change } from "diff";
 import { useDebounce } from "@uidotdev/usehooks";
 import { Node as ProseMirrorNode } from "@tiptap/pm/model";
-import { predict as predictAction } from "@/actions/predictions/predict";
-const PREDICTION_DEBOUNCE_TIME: number = 1000;
-const PREDICTION_LOCK_TIME: number = 3000;
+import { suggest as suggestAction } from "@/actions/suggestions/suggest";
+import { SuggestOutput } from "@/packages/schema";
+const SUGGESTION_DEBOUNCE_TIME: number = 1000;
+const SUGGESTION_LOCK_TIME: number = 3000;
 
-export interface UsePrediction {
-  isPredictionVisible: MutableRefObject<boolean>;
+export interface UseSuggestion {
+  isSuggestionVisible: MutableRefObject<boolean>;
   isFetching: MutableRefObject<boolean>;
-  canPredict: boolean;
-  predict: () => Promise<void>;
-  fetchPrediction: (
+  canSuggest: boolean;
+  suggest: () => Promise<void>;
+  fetchSuggestion: (
     textBeforeCursor: string,
     textAfterCursor: string
   ) => Promise<string | null>;
-  displayPrediction: (editor: Editor, prediction: string) => void;
-  acceptPrediction: (view: EditorView) => void;
-  rejectPrediction: (view: EditorView) => void;
+  displaySuggestion: (editor: Editor, prediction: string) => void;
+  acceptSuggestion: (view: EditorView) => void;
+  rejectSuggestion: (view: EditorView) => void;
   handleCreate: ({ editor }: { editor: Editor }) => void;
   handleKeyDown: (view: EditorView, event: KeyboardEvent) => void;
   handleSelectionChange: ({
@@ -52,21 +53,21 @@ function getTextBeforeAndAfterCursor(
   };
 }
 
-export function usePrediction(): UsePrediction {
+export function useSuggestion(): UseSuggestion {
   const _editor = useRef<Editor | null>(null);
   const isFetching = useRef<boolean>(false);
-  const isPredictionVisible = useRef<boolean>(false);
-  const [isPredictionLocked, setIsPredictionLocked] = useState<boolean>(false);
-  const canPredict = useDebounce(
-    !isPredictionLocked,
-    !isPredictionLocked ? PREDICTION_LOCK_TIME : 0
+  const isSuggestionVisible = useRef<boolean>(false);
+  const [isSuggestionLocked, setIsSuggestionLocked] = useState<boolean>(false);
+  const canSuggest = useDebounce(
+    !isSuggestionLocked,
+    !isSuggestionLocked ? SUGGESTION_LOCK_TIME : 0
   );
   const [selectionPosition, setSelectionPosition] = useState<number | null>(
     null
   );
   const predictTrigger = useDebounce(
     selectionPosition,
-    PREDICTION_DEBOUNCE_TIME
+    SUGGESTION_DEBOUNCE_TIME
   );
 
   useEffect(() => {
@@ -74,48 +75,66 @@ export function usePrediction(): UsePrediction {
   }, [predictTrigger]);
 
   const predict = useCallback(async () => {
-    if (!canPredict || isPredictionVisible.current || !_editor.current) return;
+    if (!canSuggest || isSuggestionVisible.current || !_editor.current) return;
     const { textBeforeCursor, textAfterCursor } = getTextBeforeAndAfterCursor(
       _editor.current.view
     );
-    const prediction: string | null = await fetchPrediction(
+    const suggestion: string | null = await fetchSuggestion(
       textBeforeCursor,
       textAfterCursor
     );
-    if (prediction) {
-      displayPrediction(_editor.current, prediction);
+    if (suggestion) {
+      displaySuggestion(_editor.current, suggestion);
     }
   }, []);
 
-  const fetchPrediction = useCallback(
+  const fetchSuggestion = useCallback(
     async (
       textBeforeCursor: string,
       textAfterCursor: string
     ): Promise<string | null> => {
-      if (isFetching.current || !canPredict || isPredictionVisible.current)
-        return null;
+      if (isFetching.current || !canSuggest) return null;
       isFetching.current = true;
-      const prediction: string | null = await predictAction(
+      const suggestion: SuggestOutput | null = await suggestAction(
         textBeforeCursor,
         textAfterCursor
       );
       isFetching.current = false;
-      return prediction;
+      console.log(suggestion);
+      const suggestionText =
+        suggestion?.words_before_suggestion +
+        suggestion?.suggestion +
+        suggestion?.words_after_suggestion;
+      return suggestionText ?? null;
     },
     []
   );
-  const displayPrediction = useCallback(
-    (editor: Editor, prediction: string) => {
-      if (isPredictionVisible.current) return;
+
+  const diffSuggestionParts = useCallback(
+    (currentText: string, suggestion: string): Change[] => {
+      console.log(currentText);
+      console.log(suggestion);
+      const parts: Change[] = diffWords(currentText, suggestion);
+      // Remove the first part if it's a removal
+      if (parts[0].removed) {
+        parts.shift();
+      }
+      // If the first part is an addition, interpret the
+      return parts;
+    },
+    []
+  );
+
+  const displaySuggestion = useCallback(
+    (editor: Editor, suggestion: string) => {
+      if (isSuggestionVisible.current) return;
       const { state } = editor.view;
       const { selection } = state;
       const { from } = selection;
 
       // Get the current text from the cursor position to the end of the document
       const currentText = state.doc.textBetween(0, state.doc.content.size);
-      console.log(currentText);
-      console.log(prediction);
-      const parts: Change[] = diffWords(currentText, prediction);
+      const parts: Change[] = diffSuggestionParts(currentText, suggestion);
 
       console.log(parts);
 
@@ -134,23 +153,24 @@ export function usePrediction(): UsePrediction {
         editor
           .chain()
           .insertContentAt(insertPosition, {
-            type: "prediction",
+            type: "suggestion",
             attrs: {
               prediction: predictionContent,
             },
           })
           .setTextSelection(insertPosition)
           .run();
-        isPredictionVisible.current = true;
-        setIsPredictionLocked(true);
+        isSuggestionVisible.current = true;
+        setIsSuggestionLocked(true);
       }
     },
     []
   );
 
-  const acceptPrediction = useCallback((view: EditorView) => {
+  const acceptSuggestion = useCallback((view: EditorView) => {
     // Converts any displayed predictions into regular text
-    if (!isPredictionVisible.current) return;
+    console.log("acceptSuggestion");
+    if (!isSuggestionVisible.current) return;
     view.state.doc.descendants((node: ProseMirrorNode, pos: number) => {
       if (node.type.name === "prediction") {
         const tr = view.state.tr;
@@ -166,11 +186,12 @@ export function usePrediction(): UsePrediction {
         view.dispatch(tr);
       }
     });
-    isPredictionVisible.current = false;
-    setIsPredictionLocked(true);
+    isSuggestionVisible.current = false;
+    setIsSuggestionLocked(true);
   }, []);
 
-  const rejectPrediction = useCallback((view: EditorView) => {
+  const rejectSuggestion = useCallback((view: EditorView) => {
+    console.log("rejectSuggestion");
     // Removes all displayed predictions
     if (!_editor.current) return;
     const tr = view.state.tr;
@@ -180,23 +201,26 @@ export function usePrediction(): UsePrediction {
       }
     });
     view.dispatch(tr);
-    isPredictionVisible.current = false;
-    setIsPredictionLocked(true);
+    isSuggestionVisible.current = false;
+    setIsSuggestionLocked(true);
   }, []);
 
   const handleKeyDown = useCallback(
     (view: EditorView, event: KeyboardEvent) => {
       // const { state } = view;
-      if (isPredictionVisible.current) {
+      if (isSuggestionVisible.current) {
         switch (event.key) {
           case "Tab":
             event.preventDefault();
-            return acceptPrediction(view);
+            console.log("Tab pressed -- accept suggestion");
+            return acceptSuggestion(view);
           case "Backspace":
             event.preventDefault();
-            return rejectPrediction(view);
+            console.log("Backspace pressed -- reject suggestion");
+            return rejectSuggestion(view);
           default:
-            return rejectPrediction(view);
+            console.log("Default -- reject suggestion");
+            return rejectSuggestion(view);
         }
       }
     },
@@ -207,8 +231,11 @@ export function usePrediction(): UsePrediction {
     async ({ editor }: { editor: Editor }) => {
       // TODO: Check UX and performance implications of not checking
       // if prediction is allowed before setting selection position
-      if (isPredictionVisible.current) {
-        rejectPrediction(editor.view);
+      if (isSuggestionVisible.current) {
+        console.log(
+          "rejectSuggestion because selection changed while suggestion is visible"
+        );
+        rejectSuggestion(editor.view);
       }
       // Prevent setting selection position if the selection is a highlight
       setSelectionPosition(editor.view.state.selection.anchor);
@@ -217,18 +244,19 @@ export function usePrediction(): UsePrediction {
   );
 
   const handleCreate = useCallback(({ editor }: { editor: Editor }) => {
+    console.log("handleCreate");
     _editor.current = editor;
   }, []);
 
   return {
     isFetching,
-    isPredictionVisible,
-    canPredict,
-    predict,
-    fetchPrediction,
-    displayPrediction,
-    acceptPrediction,
-    rejectPrediction,
+    isSuggestionVisible: isSuggestionVisible,
+    canSuggest: canSuggest,
+    suggest: predict,
+    fetchSuggestion,
+    displaySuggestion,
+    acceptSuggestion,
+    rejectSuggestion,
     handleKeyDown,
     handleSelectionChange,
     handleCreate,

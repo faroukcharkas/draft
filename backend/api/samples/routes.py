@@ -73,7 +73,6 @@ async def create_samples(request: Request, input: CreateWritingSampleInput):
     return {"message": "Chunks created"}
     
 
-
 @samples_router.post("/update")
 async def update_samples():
     return {"message": "This is the update samples endpoint"}

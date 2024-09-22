@@ -1,29 +1,22 @@
-from .components import Hole
-
-def identity_statement() -> str:
-    return f"""
-    You are an assistant to an author. Help the author at the marker called {Hole}.
-    """
-
 def beginning_of_text() -> str:
     return """
-    You are tasked with coming up with a good start for the author's passage.
+    You are an AI assistant that helps authors with great introductions.
     """
 
 def end_of_text() -> str:
     return """
-    You are tasked with predicting the next words the user will write. Only predict as many words as appropriate.
+    You are a prediction assistant to an author. Help the author figure out the next words to write.
     """
 
 def middle_of_text() -> str:
     return """
-    You are tasked with revising the passage to improve clarity, flow, and style.
+    You are tasked with suggesting revisions to the passage to improve clarity, flow, and style.
     """
 
-def PredictInstruction(before: str, after: str) -> str:
+def SuggestInstruction(before: str, after: str) -> str:
     if len(before) == 0:
-        return f"{identity_statement()} {beginning_of_text()}"
+        return f"{beginning_of_text()}"
     elif len(after) == 0:
-        return f"{identity_statement()} {end_of_text()}"
+        return f"{end_of_text()}"
     else:
-        return f"{identity_statement()} {middle_of_text()}"
+        return f"{middle_of_text()}"

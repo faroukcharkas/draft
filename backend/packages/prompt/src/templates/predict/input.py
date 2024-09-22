@@ -1,10 +1,14 @@
 from .components import PassageToRevise
 
 def beginning_of_text(after: str) -> str:
-    return f"""
-    Here is the passage that you are tasked with revising as it pertains to a good introduction:
-    {PassageToRevise(after=after)}
-    """
+    if len(after) == 0:
+        return """
+        What's a good start to a passage?
+        """
+    else:
+        return """
+        Come up with a good start for the passage:
+        """
 
 def end_of_text(before: str) -> str:
     return f"""
@@ -15,10 +19,10 @@ def end_of_text(before: str) -> str:
 def middle_of_text(before: str, after: str) -> str:
     return f"""
     Here is the passage that you are tasked with revising:
-    {PassageToRevise(before=before, after=after)}
+    {PassageToRevise(before=before, after=after, tag="to-revise")}
     """
 
-def PredictInput(before: str, after: str) -> str:
+def SuggestInput(before: str, after: str) -> str:
     if len(before) == 0:
         return beginning_of_text(after)
     elif len(after) == 0:
