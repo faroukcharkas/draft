@@ -8,28 +8,22 @@ from pinecone.grpc import PineconeGRPC as Pinecone
 from openai import AsyncOpenAI
 
 # internal
-from api.routes import api
-
-# env variables
-SUPABASE_URL: str = "https://lrzujclzezqrzlfsiste.supabase.co"
-SUPABASE_ANON_KEY: str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxyenVqY2x6ZXpxcnpsZnNpc3RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjYzMjkzOTAsImV4cCI6MjA0MTkwNTM5MH0.esIALlsS4vtpcSeF5FSkdTtRyXl5X19SrGm4jVKQR_I"
-PINECONE_WRITING_SAMPLES_HOST: str = "https://writing-samples-wzfnr0a.svc.aped-4627-b74a.pinecone.io"
-PINECONE_API_KEY: str = "a32a84c7-341e-41aa-b758-648b1c3e4150"
-OPENAI_API_KEY: str = "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"
+from src.api.routes import api
+from src.globals.environment import PentipEnvironment
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     supabase: SupabaseClient = create_client(
-        supabase_url=SUPABASE_URL,
-        supabase_key=SUPABASE_ANON_KEY,
+        supabase_url=PentipEnvironment.supabase_url,
+        supabase_key=PentipEnvironment.supabase_key,
     )
 
     app.state.supabase = supabase
 
-    client: AsyncOpenAI = AsyncOpenAI(api_key=OPENAI_API_KEY)
+    client: AsyncOpenAI = AsyncOpenAI(api_key=PentipEnvironment.openai_api_key)
     app.state.client = client
 
-    pinecone: Pinecone = Pinecone(api_key=PINECONE_API_KEY)
+    pinecone: Pinecone = Pinecone(api_key=PentipEnvironment.pinecone_api_key)
     writing_samples_index = pinecone.Index("writing-samples")
 
     app.state.pinecone = pinecone

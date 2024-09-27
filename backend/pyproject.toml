@@ -17,6 +17,8 @@ tokenizers = "^0.20.0"
 openai = "^1.45.0"
 pinecone = {extras = ["grpc"], version = "^5.1.0"}
 prompt = {path = "../backend/packages/prompt", develop = true}
+pydantic-settings = "^2.5.2"
+tiktoken = "^0.7.0"
 
 [build-system]
 requires = ["poetry-core"]

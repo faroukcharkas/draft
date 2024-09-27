@@ -8,7 +8,7 @@ import { Suggestion } from "../parts/suggestion";
 import InlineMenu from "./inline-menu/inline-menu";
 import { ToolBar } from "./tool-bar/tool-bar";
 import { Json } from "@/packages/schema";
-import { useSuggestion } from "@/hooks/use-suggestion";
+import { useSuggest } from "@/hooks/use-suggest";
 import { Content } from "@tiptap/react";
 import { useAutosave } from "@/hooks/use-autosave";
 const extensions = [
@@ -31,12 +31,12 @@ export function DocumentBody({
   initialBody: Json | null;
   documentId: string;
 }) {
-  const { content, handleUpdate } = useAutosave({
+  const { content, handleUpdate, isSaving, isSaved } = useAutosave({
     initialContent: initialBody,
     documentId,
   });
   const { handleKeyDown, handleSelectionChange, canSuggest, handleCreate } =
-    useSuggestion();
+    useSuggest();
 
   return (
     <div className="flex flex-1 flex-col h-full">
@@ -44,7 +44,7 @@ export function DocumentBody({
         extensions={extensions}
         content={content as Content}
         immediatelyRender={false}
-        slotBefore={<ToolBar />}
+        slotBefore={<ToolBar isSaving={isSaving} isSaved={isSaved} />}
         editorProps={{
           attributes: {
             class:

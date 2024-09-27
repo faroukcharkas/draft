@@ -51,6 +51,20 @@ const config: Config = {
           "5": "hsl(var(--chart-5))",
         },
       },
+      fontFamily: {
+        sans: ["var(--font-inter-sans-serif)"],
+        serif: ["var(--font-lora-serif)"],
+      },
+      fontSize: {
+        "h1": ["2.25rem", { lineHeight: "2.5rem", fontWeight: "700" }],
+        "h2": ["1.875rem", { lineHeight: "2.25rem", fontWeight: "700" }],
+        "h3": ["1.5rem", { lineHeight: "2rem", fontWeight: "600" }],
+        "h4": ["1.25rem", { lineHeight: "1.75rem", fontWeight: "600" }],
+        "h5": ["1.125rem", { lineHeight: "1.5rem", fontWeight: "600" }],
+        "h6": ["1rem", { lineHeight: "1.5rem", fontWeight: "600" }],
+        "body": ["1rem", { lineHeight: "1.5rem" }],
+        "small": ["0.875rem", { lineHeight: "1.25rem" }],
+      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",

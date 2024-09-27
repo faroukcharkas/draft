@@ -7,6 +7,12 @@ const loraSerif = localFont({
   weight: "100 900",
 });
 
+const interSansSerif = localFont({
+  src: "../fonts/InterVF.ttf",
+  variable: "--font-inter-sans-serif",
+  weight: "100 900",
+});
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -14,7 +20,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${loraSerif.variable} antialiased`}>{children}</body>
+      <body className={`${loraSerif.variable} ${interSansSerif.variable} antialiased`}>{children}</body>
     </html>
   );
 }

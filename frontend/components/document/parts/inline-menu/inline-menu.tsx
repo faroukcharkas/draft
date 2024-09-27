@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 function GenerateMenu() {
+  const [input, setInput] = useState("");
   return (
     <div className="w-[350px] bg-popover p-2 rounded-md border border-border">
       <div className="flex flex-col gap-2">
@@ -12,8 +13,12 @@ function GenerateMenu() {
             type="text"
             className="w-full"
             placeholder="What should I write?"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
           />
-          <Button>Generate</Button>
+          <Button onClick={() => {
+            console.log(input);
+          }}>Generate</Button>
         </div>
       </div>
     </div>

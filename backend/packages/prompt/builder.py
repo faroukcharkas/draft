@@ -2,23 +2,25 @@
 from pydantic import BaseModel
 
 # internal
-from .src.templates.predict.guidelines import SuggestGuidelines
-from .src.templates.predict.instruction import SuggestInstruction
-from .src.templates.predict.output import SuggestOutput
-from .src.templates.predict.input import SuggestInput
-from .src.templates.predict.samples import PredictSamples
+from .src.templates.suggest.guidelines import SuggestGuidelines
+from .src.templates.suggest.instruction import SuggestInstruction
+from .src.templates.suggest.output import SuggestOutput
+from .src.templates.suggest.input import SuggestInput
+from .src.templates.suggest.samples import SuggestSamples
 
 class PromptBuilder(BaseModel):
     @staticmethod
     def build_before_after_prompt(before: str, after: str, samples: list[str]) -> str:
-        return f"""
+        prompt = f"""
         {SuggestInstruction(before, after)}
 
-        {PredictSamples(samples)}
+        {SuggestSamples(samples)}
+
+        {SuggestGuidelines()}
     
         {SuggestInput(before, after)}
-
-        {SuggestGuidelines(before, after)}
         
-        {SuggestOutput(before, after)}
+        {SuggestOutput(before)}
         """
+        print(f"Generated prompt:\n{prompt}")
+        return prompt

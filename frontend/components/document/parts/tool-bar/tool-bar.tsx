@@ -11,89 +11,46 @@ import {
 import { cx } from "class-variance-authority";
 
 const toolBarStyle = cx([
-  "flex flex-row mb-4 min-h-[48px] rounded-2xl p-1 gap-1",
-  "bg-gradient-to-b from-[#f8f8f8] to-[#f5f5f5]",
-  "border-t-[2px] border-[#fdfdfd]",
-  "shadow-md",
+  "flex flex-row items-center mb-4 min-h-[48px] rounded-2xl p-2 gap-2",
+  "ml-[-4px] bg-white shadow-sm",
 ]);
 
-export function ToolBar() {
+export function ToolBar({ isSaving, isSaved }: { isSaving: boolean; isSaved: boolean }) {
   const { editor } = useCurrentEditor();
-  const iconSize = 24;
+  const iconSize = 20;
+
+  const toggles = [
+    { action: "toggleBold", isActive: "bold", Icon: BoldIcon },
+    { action: "toggleItalic", isActive: "italic", Icon: ItalicIcon },
+    { action: "toggleUnderline", isActive: "underline", Icon: UnderlineIcon },
+    { action: "setTextAlign", value: "left", isActive: ["textAlign", "left"], Icon: AlignLeftIcon },
+    { action: "setTextAlign", value: "center", isActive: ["textAlign", "center"], Icon: AlignCenterIcon },
+    { action: "setTextAlign", value: "right", isActive: ["textAlign", "right"], Icon: AlignRightIcon },
+  ];
+
   return (
     <div className={toolBarStyle}>
-      <SingleIconToggle
-        onClick={() => {
-          editor?.chain().toggleBold().run();
-        }}
-        isToggled={editor?.isActive("bold") ?? false}
-        icon={
-          <BoldIcon
-            width={iconSize}
-            height={iconSize}
-          />
-        }
-      />
-      <SingleIconToggle
-        onClick={() => {
-          editor?.chain().toggleItalic().run();
-        }}
-        isToggled={editor?.isActive("italic") ?? false}
-        icon={
-          <ItalicIcon
-            width={iconSize}
-            height={iconSize}
-          />
-        }
-      />
-      <SingleIconToggle
-        onClick={() => {
-          editor?.chain().toggleUnderline().run();
-        }}
-        isToggled={editor?.isActive("underline") ?? false}
-        icon={
-          <UnderlineIcon
-            width={iconSize}
-            height={iconSize}
-          />
-        }
-      />
-      <SingleIconToggle
-        onClick={() => {
-          editor?.chain().setTextAlign("left").run();
-        }}
-        isToggled={editor?.isActive("textAlign", "left") ?? false}
-        icon={
-          <AlignLeftIcon
-            width={iconSize}
-            height={iconSize}
-          />
-        }
-      />
-      <SingleIconToggle
-        onClick={() => {
-          editor?.chain().setTextAlign("center").run();
-        }}
-        isToggled={editor?.isActive("textAlign", "center") ?? false}
-        icon={
-          <AlignCenterIcon
-            width={iconSize}
-            height={iconSize}
-          />
-        }
-      />
-      <SingleIconToggle
-        onClick={() => {
-          editor?.chain().setTextAlign("right").run();
-        }}
-        isToggled={editor?.isActive("textAlign", "right") ?? false}
-        icon={
-          <AlignRightIcon
-            width={iconSize}
-            height={iconSize}
-          />
-        }
-      />
+      {toggles.map(({ action, value, isActive, Icon }) => (
+        <SingleIconToggle
+          key={action + (value || '')}
+          onClick={() => {
+            if (editor) {
+              const chain = editor.chain();
+              if (action in chain) {
+                (chain[action as keyof typeof chain] as Function)(value).run();
+              }
+            }
+          }}
+          isToggled={Array.isArray(isActive) 
+            ? editor?.isActive(isActive[0], isActive[1]) ?? false
+            : editor?.isActive(isActive) ?? false
+          }
+          icon={<Icon width={iconSize} height={iconSize} />}
+        />
+      ))}
+      <div className="ml-auto text-sm font-medium text-gray-600">
+        {isSaving ? "Saving..." : isSaved ? "Saved" : ""}
+      </div>
     </div>
   );
 }
