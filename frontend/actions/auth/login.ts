@@ -26,5 +26,5 @@ export async function login({
   }
 
   revalidatePath("/", "layout");
-  redirect("/me");
+  redirect("/home/documents");
 }

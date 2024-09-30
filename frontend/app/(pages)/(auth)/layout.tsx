@@ -12,7 +12,7 @@ export default function AuthLayout({
       <div className="relative z-10 max-w-[350px] w-full">
         <div className="w-full bg-white border p-2 rounded-2xl shadow-md">
           <NoiseOverlay className="rounded-2xl" />
-          <div className="relative z-10 bg-white p-10 rounded-2xl border flex flex-col items-center gap-5">
+          <div className="relative z-10 bg-white p-10 rounded-2xl border flex flex-col items-center gap-5 shadow-inner">
             <Logo size={40} />
             {children}
           </div>
