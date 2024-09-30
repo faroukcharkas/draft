@@ -22,7 +22,7 @@ export async function login({
   const { error } = await supabase.auth.signInWithPassword(data);
   console.log(error);
   if (error) {
-    redirect("/error");
+    throw new Error(error.message);
   }
 
   revalidatePath("/", "layout");

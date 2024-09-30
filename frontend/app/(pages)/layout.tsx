@@ -1,4 +1,5 @@
 import localFont from "next/font/local";
+import { Toaster } from "@/components/ui/toaster";
 import "@/app/globals.css";
 
 const loraSerif = localFont({
@@ -20,7 +21,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${loraSerif.variable} ${interSansSerif.variable} antialiased`}>{children}</body>
+      <body className={`${loraSerif.variable} ${interSansSerif.variable} antialiased`}>
+        {children}
+        <Toaster />
+      </body>
     </html>
   );
 }

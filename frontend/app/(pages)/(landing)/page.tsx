@@ -1,21 +1,35 @@
+import NoiseOverlay from "@/components/noise-overlay";
+import Logo from "@/components/brand/logo";
+import { Button } from "@/components/ui/button";
+import "material-symbols/rounded.css";
 import Link from "next/link";
-
 export default function LandingPage() {
   return (
-    <div className="flex flex-col items-center justify-center h-screen w-screen bg-gradient-to-b from-[#fbfbfb] to-[#f7f7f7]">
-      <h1 className="text-6xl font-bold mb-4">Pentip</h1>
-      <p className="text-4xl text-center mb-8">Express yourself effortlessly</p>
-      <div className="flex space-x-4">
-        <Link href="/home/documents">
-          <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-            Go Home
-          </button>
-        </Link>
-        <Link href="/signup">
-          <button className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
-            Sign Up
-          </button>
-        </Link>
+    <div className="h-screen w-screen flex flex-1 justify-center items-center bg-background">
+      <NoiseOverlay />
+      <div className="z-10 flex flex-col items-center justify-center gap-8">
+        <Logo size={64} />
+        <div className="flex flex-col items-center justify-center">
+          <h1 className="text-6xl font-bold">Express yourself</h1>
+          <h1 className="text-6xl font-bold">effortlessly.</h1>
+        </div>
+        <p className="text-muted-foreground">
+          Currently reaching perfection in closed beta. <br /> Unauthorized new accounts will be deleted.
+        </p>
+        <div className="flex gap-4">
+          <Link href="/signup">
+            <Button className="gap-2">
+              <span className="material-symbols-rounded">person_add</span>
+            Sign up
+          </Button>
+          </Link>
+          <Link href="/login">
+            <Button className="gap-2" variant="outline">
+              <span className="material-symbols-rounded">login</span>
+              Log in
+            </Button>
+          </Link>
+        </div>
       </div>
     </div>
   );
