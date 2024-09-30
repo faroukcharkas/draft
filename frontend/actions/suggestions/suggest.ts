@@ -3,13 +3,13 @@
 import { createClient } from "@/utils/supabase/server";
 import { suggestInputSchema, suggestOutputSchema } from "@/packages/schema";
 
-const supabase = createClient();
 
 export async function suggest(
   textBeforeCursor: string,
   textAfterCursor: string,
   documentId: string
 ) {
+  const supabase = createClient();
   try {
     const user = await supabase.auth.getUser();
     if (!user.data.user) {

@@ -3,9 +3,9 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 
-const supabase = createClient();
-
 export async function createDocumentThenRedirect(startDescription: string) {
+  const supabase = createClient();
+
   const { data: user } = await supabase.auth.getUser();
 
   if (!user.user) {

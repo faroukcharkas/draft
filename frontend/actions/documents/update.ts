@@ -3,9 +3,9 @@
 import { createClient } from "@/utils/supabase/server";
 import { Json } from "@/packages/schema";
 
-const supabase = createClient();
 
 export async function updateDocumentBody(documentId: string, content: Json) {
+  const supabase = createClient();
   console.log("Saving document content", documentId, content);
   const { data: user } = await supabase.auth.getUser();
 
@@ -31,6 +31,7 @@ export async function updateDocumentBody(documentId: string, content: Json) {
 }
 
 export async function updateDocumentTitle(documentId: string, title: string) {
+  const supabase = createClient();
   console.log("Saving document title", documentId, title);
   const { data: user } = await supabase.auth.getUser();
 
@@ -47,6 +48,7 @@ export async function updateDocumentTitle(documentId: string, title: string) {
 }
 
 export async function updateDocumentDescription(documentId: string, description: string) {
+  const supabase = createClient();
   console.log("Saving document description", documentId, description);
   const { data: user } = await supabase.auth.getUser();
   
@@ -60,7 +62,7 @@ export async function updateDocumentDescription(documentId: string, description:
     .eq("id", documentId)
     .eq("user_id", user.user.id)
     .single();
-  
+
   if (error) {
     console.error("Error saving document description:", error);
     throw error;

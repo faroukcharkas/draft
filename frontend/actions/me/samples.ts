@@ -3,9 +3,9 @@
 import { createClient } from "@/utils/supabase/server";
 import { Tables } from "@/packages/schema";
 
-const supabase = createClient();
 
 export async function getUser() {
+  const supabase = createClient();
   const { data } = await supabase.auth.getUser();
   return data;
 }

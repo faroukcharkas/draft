@@ -3,12 +3,11 @@
 import { createClient } from "@/utils/supabase/server";
 import { generateInputSchema, generateOutputSchema } from "@/packages/schema";
 
-const supabase = createClient();
-
 export async function generate(
   selection: string,
   command: string
 ) {
+  const supabase = createClient();
   const user = await supabase.auth.getUser();
   if (!user.data.user) {
     throw new Error("User not authenticated");

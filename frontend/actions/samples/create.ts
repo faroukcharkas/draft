@@ -3,12 +3,12 @@
 import { createClient } from "@/utils/supabase/server";
 import { Tables } from "@/packages/schema";
 
-const supabase = createClient();
 
 export async function createSample(data: {
   text: string;
   style: "FORMAL" | "CASUAL";
 }): Promise<Tables<"writing_sample"> | null> {
+  const supabase = createClient();
   console.log(data);
   const user = await supabase.auth.getUser();
   if (!user.data.user) {
