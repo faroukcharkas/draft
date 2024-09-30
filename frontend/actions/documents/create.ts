@@ -5,7 +5,7 @@ import { createClient } from "@/utils/supabase/server";
 
 const supabase = createClient();
 
-export async function createDocumentThenRedirect() {
+export async function createDocumentThenRedirect(startDescription: string) {
   const { data: user } = await supabase.auth.getUser();
 
   if (!user.user) {
@@ -16,6 +16,7 @@ export async function createDocumentThenRedirect() {
     .from("document")
     .insert({
       user_id: user.user.id,
+      description: startDescription,
     })
     .select()
     .single();

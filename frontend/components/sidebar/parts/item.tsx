@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { cva, type VariantProps } from "class-variance-authority";
 
 const sidebarItemStyles = cva(
-  "py-2 px-4 mx-[-16px] rounded-xl",
+  "py-2 px-4 mx-[-16px] rounded-xl font-semibold",
   {
     variants: {
       active: {
@@ -38,7 +38,7 @@ export default function SidebarItem({
       href={href}
       className={sidebarItemStyles({ active: isActive })}
     >
-      <div className="flex items-center gap-2 font-sans">
+      <div className="flex items-center gap-2">
         {icon}
         {children}
       </div>

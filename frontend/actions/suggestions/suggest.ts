@@ -7,7 +7,8 @@ const supabase = createClient();
 
 export async function suggest(
   textBeforeCursor: string,
-  textAfterCursor: string
+  textAfterCursor: string,
+  documentId: string
 ) {
   try {
     const user = await supabase.auth.getUser();
@@ -18,6 +19,7 @@ export async function suggest(
     const input = suggestInputSchema.parse({
       text_before_cursor: textBeforeCursor,
       text_after_cursor: textAfterCursor,
+      document_id: documentId,
     });
 
     const response = await fetch(

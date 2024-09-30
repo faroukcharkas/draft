@@ -2,6 +2,7 @@
 from fastapi import APIRouter, Request, HTTPException
 from pinecone import Index as PineconeIndex
 from openai import AsyncOpenAI
+from supabase import Client as SupabaseClient
 
 # internal
 from .io import SuggestInput, SuggestOutput
@@ -17,15 +18,18 @@ async def suggest(request: Request, input: SuggestInput) -> SuggestOutput:
         raise HTTPException(status_code=401, detail="User ID not provided")
     writing_samples_index: PineconeIndex = request.app.state.writing_samples_index
     openai: AsyncOpenAI = request.app.state.client
-
+    supabase: SupabaseClient = request.app.state.supabase
+    
     suggestion: Suggestion = await SuggestionsModule.suggest(
         SuggestParams(
             user_id=user_id,
             text_before_cursor=input.text_before_cursor,
-            text_after_cursor=input.text_after_cursor
+            text_after_cursor=input.text_after_cursor,
+            document_id=input.document_id
         ),
         writing_samples_index,
-        openai
+        openai,
+        supabase
     )
 
     return SuggestOutput(

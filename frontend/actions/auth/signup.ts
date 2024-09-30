@@ -19,10 +19,22 @@ export async function signup({
     password,
   };
 
-  const { error } = await supabase.auth.signUp(data);
-  console.log(error);
-  if (error) {
+  const { data: authData, error: authError } = await supabase.auth.signUp(data);
+  
+  if (authError) {
+    console.error(authError);
     redirect("/error");
+  }
+
+  if (authData.user) {
+    const { error: insertError } = await supabase
+      .from('users')
+      .insert({ id: authData.user.id });
+
+    if (insertError) {
+      console.error(insertError);
+      redirect("/error");
+    }
   }
 
   revalidatePath("/", "layout");

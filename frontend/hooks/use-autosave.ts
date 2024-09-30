@@ -1,5 +1,5 @@
 import { useCallback, useState, useEffect } from "react";
-import { saveDocumentBody } from "@/actions/documents/save";
+import { updateDocumentBody, updateDocumentTitle } from "@/actions/documents/update";
 import { Json } from "@/packages/schema";
 import { useDebounce } from "@uidotdev/usehooks";
 import { EditorEvents } from "@tiptap/core";
@@ -14,17 +14,22 @@ export interface UseAutosave {
   content: Json;
   setContent: (content: Json) => void;
   handleUpdate: (event: EditorEvents["update"]) => void;
+  onTitleChange: (title: string) => void;
   isSaving: boolean;
   isSaved: boolean;
+  title: string;
 }
 
 export function useAutosave({
   initialContent,
+  initialTitle,
   documentId,
 }: {
   initialContent: Json;
+  initialTitle: string;
   documentId: string;
 }): UseAutosave {
+  const [title, setTitle] = useState<string>(initialTitle);
   const [content, setContent] = useState<Json>(initialContent);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [isSaved, setIsSaved] = useState<boolean>(true);
@@ -34,7 +39,7 @@ export function useAutosave({
     if (debouncedContent !== initialContent) {
       setIsSaving(true);
       setIsSaved(false);
-      saveDocumentBody(documentId, plainContentify(debouncedContent))
+      updateDocumentBody(documentId, plainContentify(debouncedContent))
         .then(() => {
           setIsSaved(true);
         })
@@ -56,10 +61,20 @@ export function useAutosave({
     [content]
   );
 
+  const onTitleChange = useCallback(
+    (title: string) => {
+      setTitle(title);
+      updateDocumentTitle(documentId, title);
+    },
+    [documentId]
+  );
+
   return {
     content,
     setContent,
     handleUpdate,
+    onTitleChange,
+    title,
     isSaving,
     isSaved,
   };

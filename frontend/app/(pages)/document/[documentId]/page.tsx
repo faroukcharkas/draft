@@ -1,29 +1,35 @@
-import Document from "@/components/document/document";
-import { getDocument } from "./actions";
-import { ArrowLeft as ArrowLeftIcon } from "iconoir-react/regular";
-import Link from "next/link";
+import "material-symbols/rounded.css";
+import { readDocument } from "@/actions/documents/read";
+import Editor from "./parts/editor";
+import { Button } from "@/components/ui/button";
+import {
+  Drawer,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
+import EditDescription from "./parts/edit-description";
 
 export default async function DocumentPage({
   params,
 }: {
   params: { documentId: string };
 }) {
-  const document = await getDocument(params.documentId);
+  const document = await readDocument(params.documentId);
 
   return (
-    <div className="flex h-screen w-screen bg-gradient-to-b from-[#fbfbfb] to-[#f7f7f7]">
-      <header className="flex h-[60px] p-5 items-center justify-center">
-        <Link href="/home/documents">
-          <ArrowLeftIcon className="mr-2" />
-        </Link>
-      </header>
-      <main className="flex flex-1 justify-center">
-        {document ? (
-          <Document initialDocument={document} />
-        ) : (
-          <div>Document not found</div>
-        )}
-      </main>
+    <div className="flex w-full h-full">
+      <div className="flex-1"></div>
+      <Editor initialDocument={document} />
+      <div className="flex flex-1 flex-col px-2 justify-end items-start">
+        <Drawer>
+          <DrawerTrigger asChild>
+            <Button variant="ghost" className="gap-2 font-semibold text-muted-foreground">
+              <span className="material-symbols-rounded">edit_note</span>
+              Edit Description
+            </Button>
+          </DrawerTrigger>
+          <EditDescription documentId={document.id} initialDescription={document.description} />
+        </Drawer>
+      </div>
     </div>
   );
 }

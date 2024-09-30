@@ -9,55 +9,35 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      author: {
-        Row: {
-          created_at: string
-          id: string
-          user_id: string | null
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "author_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       document: {
         Row: {
           body: Json | null
           created_at: string
+          description: string | null
           format_version: number | null
           id: string
           title: string
+          updated_at: string | null
           user_id: string | null
         }
         Insert: {
           body?: Json | null
           created_at?: string
+          description?: string | null
           format_version?: number | null
           id?: string
           title?: string
+          updated_at?: string | null
           user_id?: string | null
         }
         Update: {
           body?: Json | null
           created_at?: string
+          description?: string | null
           format_version?: number | null
           id?: string
           title?: string
+          updated_at?: string | null
           user_id?: string | null
         }
         Relationships: [
@@ -70,44 +50,70 @@ export type Database = {
           },
         ]
       }
+      logit_bias: {
+        Row: {
+          id: string
+          user_id: string | null
+          weights: Json | null
+        }
+        Insert: {
+          id?: string
+          user_id?: string | null
+          weights?: Json | null
+        }
+        Update: {
+          id?: string
+          user_id?: string | null
+          weights?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "logit_bias_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sample_chunk: {
         Row: {
-          author_id: string | null
           created_at: string
           id: string
           sample_id: string | null
           text: string
+          user_id: string | null
           writing_style: Database["public"]["Enums"]["writing_style"]
         }
         Insert: {
-          author_id?: string | null
           created_at?: string
           id?: string
           sample_id?: string | null
           text: string
+          user_id?: string | null
           writing_style: Database["public"]["Enums"]["writing_style"]
         }
         Update: {
-          author_id?: string | null
           created_at?: string
           id?: string
           sample_id?: string | null
           text?: string
+          user_id?: string | null
           writing_style?: Database["public"]["Enums"]["writing_style"]
         }
         Relationships: [
-          {
-            foreignKeyName: "sample_chunk_author_id_fkey"
-            columns: ["author_id"]
-            isOneToOne: false
-            referencedRelation: "author"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "sample_chunk_sample_id_fkey"
             columns: ["sample_id"]
             isOneToOne: false
             referencedRelation: "writing_sample"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sample_chunk_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user"
             referencedColumns: ["id"]
           },
         ]

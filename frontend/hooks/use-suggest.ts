@@ -19,7 +19,8 @@ export interface UseSuggest {
   suggest: () => Promise<void>;
   fetchSuggestion: (
     textBeforeCursor: string,
-    textAfterCursor: string
+    textAfterCursor: string,
+    documentId: string
   ) => Promise<string | null>;
   displaySuggestion: (editor: Editor, prediction: string) => void;
   acceptSuggestion: (view: EditorView) => void;
@@ -33,6 +34,7 @@ export interface UseSuggest {
     editor: Editor;
     transaction: Transaction;
   }) => void;
+  consumeDocumentId: (documentId: string) => void;
 }
 
 interface TextBeforeAndAfterCursor {
@@ -68,6 +70,7 @@ function getTextBeforeAndAfterCursor(
 
 export function useSuggest(): UseSuggest {
   const _editor = useRef<Editor | null>(null);
+  const _documentId = useRef<string | null>(null);
   const isFetching = useRef<boolean>(false);
   const isSuggestionVisible = useRef<boolean>(false);
   const [isSuggestionLocked, setIsSuggestionLocked] = useState<boolean>(false);
@@ -88,13 +91,14 @@ export function useSuggest(): UseSuggest {
   }, [suggestTrigger]);
 
   const suggest = useCallback(async () => {
-    if (!canSuggest || isSuggestionVisible.current || !_editor.current) return;
+    if (!canSuggest || isSuggestionVisible.current || !_editor.current || !_documentId.current) return;
     const { textBeforeCursor, textAfterCursor } = getTextBeforeAndAfterCursor(
       _editor.current.view
     );
     const suggestion: string | null = await fetchSuggestion(
       textBeforeCursor,
-      textAfterCursor
+      textAfterCursor,
+      _documentId.current
     );
     if (suggestion) {
       displaySuggestion(_editor.current, suggestion);
@@ -104,13 +108,15 @@ export function useSuggest(): UseSuggest {
   const fetchSuggestion = useCallback(
     async (
       textBeforeCursor: string,
-      textAfterCursor: string
+      textAfterCursor: string,
+      documentId: string
     ): Promise<string | null> => {
       if (isFetching.current || !canSuggest) return null;
       isFetching.current = true;
       const suggestion: SuggestOutput | null = await suggestAction(
         textBeforeCursor,
-        textAfterCursor
+        textAfterCursor,
+        documentId
       );
       isFetching.current = false;
       return suggestion?.next_words ?? null;
@@ -226,6 +232,10 @@ export function useSuggest(): UseSuggest {
     _editor.current = editor;
   }, []);
 
+  const consumeDocumentId = useCallback((documentId: string) => {
+    _documentId.current = documentId;
+  }, []);
+
   return {
     isFetching,
     isSuggestionVisible: isSuggestionVisible,
@@ -238,5 +248,6 @@ export function useSuggest(): UseSuggest {
     handleKeyDown,
     handleSelectionChange,
     handleCreate,
+    consumeDocumentId,
   };
 }

@@ -1,6 +1,7 @@
 # builtin
 import logging
 from uuid import UUID
+import json
 
 # external
 from fastapi import APIRouter, Request, HTTPException
@@ -12,6 +13,7 @@ from pinecone import Index as PineconeIndex
 from src.api.samples.io import CreateWritingSampleInput
 from src.providers.splitting.semantic import SemanticSplittingProvider
 from src.models.samples import WritingSampleStyleType
+from src.modules.bias.module import BiasModule
 
 logger = logging.getLogger(__name__)
 
@@ -60,6 +62,15 @@ async def create_samples(request: Request, input: CreateWritingSampleInput):
         "user_id": str(input.user_id),
         "writing_style": input.style.value,
         "text": input.text,
+    }).execute()
+
+    writing_samples = supabase.table("writing_sample").select("*").eq("user_id", str(input.user_id)).execute()
+    print(writing_samples.data)
+    logit_bias = BiasModule.calculate_bias([sample["text"] for sample in writing_samples.data])
+
+    logit_response = supabase.table("logit_bias").insert({
+        "weights": json.dumps(logit_bias),
+        "user_id": str(input.user_id),
     }).execute()
     
     if len(response.data) == 0:
