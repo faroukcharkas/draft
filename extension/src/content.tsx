@@ -1,34 +1,22 @@
-import React, { useState } from 'react'
-import { Button } from "./components/ui/button"
-import { Drawer, DrawerContent, DrawerTrigger } from "./components/ui/drawer"
+import React, { useState, useEffect, useCallback } from 'react'
+import { Drawer, DrawerContent } from "./components/ui/drawer"
 import NoiseOverlay from "./components/noise-overlay"
 import "../style.css"
+import { useDrawer } from "./hooks/use-drawer"
 
-export default function Content() {
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
-  console.log("Content script loaded")
 
-  const handleKeyPress = (event: KeyboardEvent) => {
-    if (event.metaKey && event.shiftKey && event.key === "P") {
-      console.log("Hotkey Cmd+Shift+P pressed")
-      setIsDrawerOpen(true)
-    }
-  }
-
-  React.useEffect(() => {
-    document.addEventListener("keydown", handleKeyPress)
-    return () => {
-      document.removeEventListener("keydown", handleKeyPress)
-    }
-  }, [])
+export default function App() {
+  const { isDrawerOpen, setIsDrawerOpen } = useDrawer()
 
   return (
-    <div className="h-screen w-screen">
+    <div className="h-screen w-screen z-[99999]">
       <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
-        <DrawerTrigger />
-        <DrawerContent className="bg-[#cccccc] max-h-[80vh] h-full">
-          <NoiseOverlay/>
-          Hi
+        <DrawerContent className="bg-[#cccccc] max-h-[80vh] h-full justify-center items-center">
+          {isDrawerOpen && <NoiseOverlay />}
+          <div className="max-h-[75vh] h-full max-w-[750px] w-full shadow-xl rounded-xl p-8 bg-gray-50">
+            <h1 className="text-4xl font-bold">Hello, World!</h1>
+            <p className="text-lg">This is a custom React component.</p>
+          </div>
         </DrawerContent>
       </Drawer>
     </div>

@@ -7,7 +7,9 @@ export default function Sidebar() {
     <div className="flex-0 min-w-[300px] pr-1 relative z-10">
       <div className="relative z-10">
         <div className="flex items-center justify-start px-6 py-6">
-          <Logo size={36} />
+          <div className="max-h-[50px]">
+            <Logo size={24} variant="text" />
+          </div>
         </div>
         <div className="flex-1 flex flex-col px-6 gap-2">
           <SidebarItem href="/home/documents" icon={<span className="material-symbols-rounded text-muted-foreground">description</span>}>Documents</SidebarItem>
