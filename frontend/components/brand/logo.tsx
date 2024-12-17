@@ -1,15 +1,32 @@
 import Image from "next/image";
-import IconLogo from "../../assets/DraftIconLogo.svg";
-import TextLogo from "../../assets/DraftTextLogo.svg";
 
-export default function Logo({ size = 32, variant = "icon" }: { size: number, variant: "icon" | "text" }) {
+export default function Logo({
+  size = 32,
+  color = "black",
+}: {
+  size: number;
+  color: "black" | "white" | "primary" | "gray";
+}) {
+  let logo;
+  switch (color) {
+    case "black":
+      logo = "/logos/black-icon.svg";
+      break;
+    case "white":
+      logo = "/logos/white-icon.svg";
+      break;
+    case "primary":
+      logo = "/logos/primary-icon.svg";
+      break;
+    case "gray":
+      logo = "/logos/gray-icon.svg";
+      break;
+    default:
+      logo = "/logos/black-icon.svg";
+  }
   return (
-    <div className="text-primary">
-      {variant === "icon" ? (
-        <Image src={IconLogo} alt="pentip" width={size} height={size} />
-      ) : (
-        <Image src={TextLogo} alt="pentip" height={size} style={{ width: 'auto', maxHeight: size }} />
-      )}
+    <div>
+      <Image src={logo} alt="draft" width={size} height={size} />
     </div>
   );
 }

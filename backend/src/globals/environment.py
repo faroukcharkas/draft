@@ -1,6 +1,7 @@
 from pydantic_settings import BaseSettings
 from pydantic_settings import SettingsConfigDict
 
+
 class EnvironmentSettings(BaseSettings):
     supabase_url: str
     supabase_key: str
@@ -10,4 +11,5 @@ class EnvironmentSettings(BaseSettings):
 
     model_config = SettingsConfigDict(env_file="./.env")
 
-PentipEnvironment: EnvironmentSettings = EnvironmentSettings()
+
+DraftEnvironment: EnvironmentSettings = EnvironmentSettings()

@@ -8,12 +8,12 @@ export default function HomeLayout({
 }>) {
   return (
     <>
-    <Head>
-      <title>Home - Pentip</title>
-    </Head>
-    <div className="flex flex-row h-screen w-screen p-3">
-      <NoiseOverlay />
-      <Sidebar />
+      <Head>
+        <title>Home - Draft</title>
+      </Head>
+      <div className="flex flex-row h-screen w-screen p-3">
+        <NoiseOverlay />
+        <Sidebar />
         <div className="flex flex-1 z-10 shadow-xl rounded-xl">{children}</div>
       </div>
     </>

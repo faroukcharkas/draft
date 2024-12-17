@@ -10,7 +10,7 @@ export default async function SamplesPage() {
   return (
     <>
     <Head>
-      <title>Samples - Pentip</title>
+      <title>Samples - Draft</title>
     </Head>
     <HomePageBlueprint title="Samples" iconName="folder_open" headerComponents={<AddSampleButton />}>
       <main className="flex-1 p-8">
